@@ -24,7 +24,7 @@ export function NewsGrid({ dict }: { dict: Dict }) {
                 <h3>{item.title}</h3>
                 <p>{item.excerpt}</p>
                 <Link className="card__link" href="#actualites">
-                  {dict.news.read} →
+                  {dict.news.read}
                 </Link>
               </div>
             </article>
