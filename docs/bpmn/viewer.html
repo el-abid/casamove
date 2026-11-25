@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>BPMN</title>
+<link rel="stylesheet" href="node_modules/bpmn-js/dist/assets/diagram-js.css" />
+<link rel="stylesheet" href="node_modules/bpmn-js/dist/assets/bpmn-js.css" />
+<link rel="stylesheet" href="node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css" />
+<style>
+  html, body { margin: 0; height: 100%; background: #fff; }
+  #canvas { width: 100vw; height: 100vh; }
+  #err {
+    display: none;
+    position: fixed;
+    inset: 0 0 auto 0;
+    padding: 14px;
+    background: #c8452b;
+    color: #fff;
+    font: 13px "Segoe UI", sans-serif;
+    white-space: pre-wrap;
+    z-index: 9;
+  }
+</style>
+</head>
+<body>
+<div id="canvas"></div>
+<div id="err"></div>
+<script src="node_modules/bpmn-js/dist/bpmn-navigated-viewer.production.min.js"></script>
+<script>
+  const file = new URLSearchParams(location.search).get("file") || "as-is.bpmn";
+  const viewer = new BpmnJS({ container: "#canvas" });
+  fetch(file)
+    .then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status + " sur " + file);
+      return r.text();
+    })
+    .then(function (xml) {
+      return viewer.importXML(xml);
+    })
+    .then(function () {
+      viewer.get("canvas").zoom("fit-viewport");
+      document.title = "OK " + file;
+    })
+    .catch(function (e) {
+      const box = document.getElementById("err");
+      box.style.display = "block";
+      box.textContent = String(e);
+      document.title = "ERR " + file;
+    });
+</script>
+</body>
+</html>

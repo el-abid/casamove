@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_CasaMove"
+                  targetNamespace="http://casamove.ma/bpmn"
+                  exporter="CasaMove"
+                  exporterVersion="1.0">
+  <bpmn:collaboration id="Collab_CasaMove">
+    <bpmn:participant id="Participant_CasaMove" name="CasaMove · Service client" processRef="Process_ServiceClient" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_ServiceClient" name="Service client augmenté, TO-BE" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_CasaMove">
+      <bpmn:lane id="Lane_Usager" name="Usager">
+        <bpmn:flowNodeRef>Start_Visite</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Question</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Consulte</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Info</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Canal" name="Canal web et chat">
+        <bpmn:flowNodeRef>Task_Transmet</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AfficheRep</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AfficheAlerte</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Alerte</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Orchestration" name="Orchestration IA, LangGraph">
+        <bpmn:flowNodeRef>GW_Type</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RAG</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Compose</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CreeTicket</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Brouillon</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Start_Perturbation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Detecte</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Prepare</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Backoffice" name="Back-office humain">
+        <bpmn:flowNodeRef>Task_Valide</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Boundary_SLA</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_Decision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Envoie</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Statut</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Ticket</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Reaffecte</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Escalade</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Qualite" name="Qualité et VoC">
+        <bpmn:flowNodeRef>Start_VoC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_VoC</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Publie</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_VoC</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="Start_Visite" name="Visite la page">
+      <bpmn:outgoing>Flow_01</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="Task_Question" name="Saisit sa question">
+      <bpmn:incoming>Flow_01</bpmn:incoming>
+      <bpmn:outgoing>Flow_02</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="Task_Transmet" name="Transmet au superviseur">
+      <bpmn:incoming>Flow_02</bpmn:incoming>
+      <bpmn:outgoing>Flow_03</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="GW_Type" name="Type d'intention" default="Flow_05">
+      <bpmn:incoming>Flow_03</bpmn:incoming>
+      <bpmn:outgoing>Flow_04</bpmn:outgoing>
+      <bpmn:outgoing>Flow_05</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_RAG" name="Recherche RAG, corpus daté">
+      <bpmn:incoming>Flow_04</bpmn:incoming>
+      <bpmn:outgoing>Flow_06</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Compose" name="Compose la réponse sourcée">
+      <bpmn:incoming>Flow_06</bpmn:incoming>
+      <bpmn:outgoing>Flow_07</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_CreeTicket" name="Qualifie et crée le ticket">
+      <bpmn:incoming>Flow_05</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Brouillon" name="Prépare le brouillon">
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_AfficheRep" name="Affiche la réponse sourcée">
+      <bpmn:incoming>Flow_07</bpmn:incoming>
+      <bpmn:outgoing>Flow_08</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="Task_Consulte" name="Consulte la réponse">
+      <bpmn:incoming>Flow_08</bpmn:incoming>
+      <bpmn:outgoing>Flow_09</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:endEvent id="End_Info" name="Réponse obtenue">
+      <bpmn:incoming>Flow_09</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:userTask id="Task_Valide" name="Valide ou édite le brouillon">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:boundaryEvent id="Boundary_SLA" name="4 h" attachedToRef="Task_Valide" cancelActivity="true">
+      <bpmn:outgoing>Flow_15</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDef_SLA">
+        <bpmn:timeDuration>PT4H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+
+    <bpmn:exclusiveGateway id="GW_Decision" name="Décision">
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_Envoie" name="Envoie la réponse validée">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+      <bpmn:outgoing>Flow_17</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Statut" name="Met à jour le statut">
+      <bpmn:incoming>Flow_17</bpmn:incoming>
+      <bpmn:outgoing>Flow_18</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="End_Ticket" name="Ticket traité">
+      <bpmn:incoming>Flow_18</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:userTask id="Task_Reaffecte" name="Réaffecte au superviseur">
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+      <bpmn:incoming>Flow_15</bpmn:incoming>
+      <bpmn:outgoing>Flow_16</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:endEvent id="End_Escalade" name="Dossier escaladé">
+      <bpmn:incoming>Flow_16</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:startEvent id="Start_Perturbation" name="Veille perturbations">
+      <bpmn:outgoing>Flow_19</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDef_Perturbation">
+        <bpmn:timeCycle>R/PT15M</bpmn:timeCycle>
+      </bpmn:timerEventDefinition>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_Detecte" name="Détecte les usagers impactés">
+      <bpmn:incoming>Flow_19</bpmn:incoming>
+      <bpmn:outgoing>Flow_20</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Prepare" name="Prépare l'alerte personnalisée">
+      <bpmn:incoming>Flow_20</bpmn:incoming>
+      <bpmn:outgoing>Flow_21</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_AfficheAlerte" name="Affiche l'alerte dans le chat">
+      <bpmn:incoming>Flow_21</bpmn:incoming>
+      <bpmn:outgoing>Flow_22</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="End_Alerte" name="Alerte reçue">
+      <bpmn:incoming>Flow_22</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:startEvent id="Start_VoC" name="Revue hebdomadaire">
+      <bpmn:outgoing>Flow_23</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDef_VoC">
+        <bpmn:timeCycle>R/P1W</bpmn:timeCycle>
+      </bpmn:timerEventDefinition>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="Task_VoC" name="Agrège thèmes et sentiment">
+      <bpmn:incoming>Flow_23</bpmn:incoming>
+      <bpmn:outgoing>Flow_24</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Publie" name="Publie le tableau VoC">
+      <bpmn:incoming>Flow_24</bpmn:incoming>
+      <bpmn:outgoing>Flow_25</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="End_VoC" name="Revue publiée">
+      <bpmn:incoming>Flow_25</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_01" sourceRef="Start_Visite" targetRef="Task_Question" />
+    <bpmn:sequenceFlow id="Flow_02" sourceRef="Task_Question" targetRef="Task_Transmet" />
+    <bpmn:sequenceFlow id="Flow_03" sourceRef="Task_Transmet" targetRef="GW_Type" />
+    <bpmn:sequenceFlow id="Flow_04" name="Information" sourceRef="GW_Type" targetRef="Task_RAG" />
+    <bpmn:sequenceFlow id="Flow_05" name="Réclamation" sourceRef="GW_Type" targetRef="Task_CreeTicket" />
+    <bpmn:sequenceFlow id="Flow_06" sourceRef="Task_RAG" targetRef="Task_Compose" />
+    <bpmn:sequenceFlow id="Flow_07" sourceRef="Task_Compose" targetRef="Task_AfficheRep" />
+    <bpmn:sequenceFlow id="Flow_08" sourceRef="Task_AfficheRep" targetRef="Task_Consulte" />
+    <bpmn:sequenceFlow id="Flow_09" sourceRef="Task_Consulte" targetRef="End_Info" />
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_CreeTicket" targetRef="Task_Brouillon" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Task_Brouillon" targetRef="Task_Valide" />
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Task_Valide" targetRef="GW_Decision" />
+    <bpmn:sequenceFlow id="Flow_13" name="Approuvé ou édité" sourceRef="GW_Decision" targetRef="Task_Envoie" />
+    <bpmn:sequenceFlow id="Flow_14" name="Rejeté" sourceRef="GW_Decision" targetRef="Task_Reaffecte" />
+    <bpmn:sequenceFlow id="Flow_15" sourceRef="Boundary_SLA" targetRef="Task_Reaffecte" />
+    <bpmn:sequenceFlow id="Flow_16" sourceRef="Task_Reaffecte" targetRef="End_Escalade" />
+    <bpmn:sequenceFlow id="Flow_17" sourceRef="Task_Envoie" targetRef="Task_Statut" />
+    <bpmn:sequenceFlow id="Flow_18" sourceRef="Task_Statut" targetRef="End_Ticket" />
+    <bpmn:sequenceFlow id="Flow_19" sourceRef="Start_Perturbation" targetRef="Task_Detecte" />
+    <bpmn:sequenceFlow id="Flow_20" sourceRef="Task_Detecte" targetRef="Task_Prepare" />
+    <bpmn:sequenceFlow id="Flow_21" sourceRef="Task_Prepare" targetRef="Task_AfficheAlerte" />
+    <bpmn:sequenceFlow id="Flow_22" sourceRef="Task_AfficheAlerte" targetRef="End_Alerte" />
+    <bpmn:sequenceFlow id="Flow_23" sourceRef="Start_VoC" targetRef="Task_VoC" />
+    <bpmn:sequenceFlow id="Flow_24" sourceRef="Task_VoC" targetRef="Task_Publie" />
+    <bpmn:sequenceFlow id="Flow_25" sourceRef="Task_Publie" targetRef="End_VoC" />
+
+    <bpmn:textAnnotation id="Annotation_Audit">
+      <bpmn:text>Chaque décision est horodatée et journalisée (NF5). Un rejet ou un dépassement de 4 h escalade le dossier au superviseur.</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_Audit" sourceRef="Annotation_Audit" targetRef="GW_Decision" associationDirection="None" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_CasaMove">
+    <bpmndi:BPMNPlane id="BPMNPlane_CasaMove" bpmnElement="Collab_CasaMove">
+      <bpmndi:BPMNShape id="Participant_CasaMove_di" bpmnElement="Participant_CasaMove" isHorizontal="true">
+        <dc:Bounds x="60" y="60" width="2180" height="1120" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Lane_Usager_di" bpmnElement="Lane_Usager" isHorizontal="true">
+        <dc:Bounds x="60" y="60" width="2180" height="190" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Canal_di" bpmnElement="Lane_Canal" isHorizontal="true">
+        <dc:Bounds x="60" y="250" width="2180" height="190" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Orchestration_di" bpmnElement="Lane_Orchestration" isHorizontal="true">
+        <dc:Bounds x="60" y="440" width="2180" height="320" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Backoffice_di" bpmnElement="Lane_Backoffice" isHorizontal="true">
+        <dc:Bounds x="60" y="760" width="2180" height="220" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Qualite_di" bpmnElement="Lane_Qualite" isHorizontal="true">
+        <dc:Bounds x="60" y="980" width="2180" height="200" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Start_Visite_di" bpmnElement="Start_Visite">
+        <dc:Bounds x="132" y="137" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="110" y="180" width="84" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Question_di" bpmnElement="Task_Question">
+        <dc:Bounds x="230" y="115" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Consulte_di" bpmnElement="Task_Consulte">
+        <dc:Bounds x="1380" y="115" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Info_di" bpmnElement="End_Info">
+        <dc:Bounds x="1580" y="137" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1553" y="180" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Transmet_di" bpmnElement="Task_Transmet">
+        <dc:Bounds x="440" y="305" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AfficheRep_di" bpmnElement="Task_AfficheRep">
+        <dc:Bounds x="1150" y="305" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AfficheAlerte_di" bpmnElement="Task_AfficheAlerte">
+        <dc:Bounds x="1880" y="305" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Alerte_di" bpmnElement="End_Alerte">
+        <dc:Bounds x="2070" y="327" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2040" y="370" width="96" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="GW_Type_di" bpmnElement="GW_Type" isMarkerVisible="true">
+        <dc:Bounds x="640" y="505" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="629" y="475" width="72" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RAG_di" bpmnElement="Task_RAG">
+        <dc:Bounds x="760" y="490" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Compose_di" bpmnElement="Task_Compose">
+        <dc:Bounds x="960" y="490" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CreeTicket_di" bpmnElement="Task_CreeTicket">
+        <dc:Bounds x="760" y="650" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Brouillon_di" bpmnElement="Task_Brouillon">
+        <dc:Bounds x="960" y="650" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_Perturbation_di" bpmnElement="Start_Perturbation">
+        <dc:Bounds x="1560" y="462" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1533" y="505" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Detecte_di" bpmnElement="Task_Detecte">
+        <dc:Bounds x="1620" y="445" width="180" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Prepare_di" bpmnElement="Task_Prepare">
+        <dc:Bounds x="1840" y="445" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Task_Valide_di" bpmnElement="Task_Valide">
+        <dc:Bounds x="1140" y="780" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Boundary_SLA_di" bpmnElement="Boundary_SLA">
+        <dc:Bounds x="1292" y="802" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1300" y="845" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_Decision_di" bpmnElement="GW_Decision" isMarkerVisible="true">
+        <dc:Bounds x="1360" y="795" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1363" y="852" width="46" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Envoie_di" bpmnElement="Task_Envoie">
+        <dc:Bounds x="1450" y="780" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Statut_di" bpmnElement="Task_Statut">
+        <dc:Bounds x="1640" y="780" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Ticket_di" bpmnElement="End_Ticket">
+        <dc:Bounds x="1830" y="802" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1803" y="845" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Reaffecte_di" bpmnElement="Task_Reaffecte">
+        <dc:Bounds x="1330" y="880" width="180" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Escalade_di" bpmnElement="End_Escalade">
+        <dc:Bounds x="1560" y="897" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1533" y="940" width="92" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Start_VoC_di" bpmnElement="Start_VoC">
+        <dc:Bounds x="1560" y="1042" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1533" y="1085" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_VoC_di" bpmnElement="Task_VoC">
+        <dc:Bounds x="1620" y="1020" width="220" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Publie_di" bpmnElement="Task_Publie">
+        <dc:Bounds x="1880" y="1020" width="170" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_VoC_di" bpmnElement="End_VoC">
+        <dc:Bounds x="2090" y="1042" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2063" y="1085" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Annotation_Audit_di" bpmnElement="Annotation_Audit" isExpanded="false">
+        <dc:Bounds x="1640" y="880" width="300" height="60" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_01_di" bpmnElement="Flow_01">
+        <di:waypoint x="168" y="155" />
+        <di:waypoint x="230" y="155" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_02_di" bpmnElement="Flow_02">
+        <di:waypoint x="380" y="155" />
+        <di:waypoint x="410" y="155" />
+        <di:waypoint x="410" y="345" />
+        <di:waypoint x="440" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03_di" bpmnElement="Flow_03">
+        <di:waypoint x="590" y="345" />
+        <di:waypoint x="612" y="345" />
+        <di:waypoint x="612" y="530" />
+        <di:waypoint x="640" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_04_di" bpmnElement="Flow_04">
+        <di:waypoint x="690" y="530" />
+        <di:waypoint x="760" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05_di" bpmnElement="Flow_05">
+        <di:waypoint x="665" y="555" />
+        <di:waypoint x="665" y="690" />
+        <di:waypoint x="760" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06_di" bpmnElement="Flow_06">
+        <di:waypoint x="910" y="530" />
+        <di:waypoint x="960" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_07_di" bpmnElement="Flow_07">
+        <di:waypoint x="1120" y="530" />
+        <di:waypoint x="1135" y="530" />
+        <di:waypoint x="1135" y="345" />
+        <di:waypoint x="1150" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_08_di" bpmnElement="Flow_08">
+        <di:waypoint x="1320" y="345" />
+        <di:waypoint x="1350" y="345" />
+        <di:waypoint x="1350" y="155" />
+        <di:waypoint x="1380" y="155" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_09_di" bpmnElement="Flow_09">
+        <di:waypoint x="1530" y="155" />
+        <di:waypoint x="1580" y="155" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="920" y="690" />
+        <di:waypoint x="960" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1110" y="690" />
+        <di:waypoint x="1110" y="820" />
+        <di:waypoint x="1140" y="820" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="1310" y="820" />
+        <di:waypoint x="1360" y="820" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="1410" y="820" />
+        <di:waypoint x="1450" y="820" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14_di" bpmnElement="Flow_14">
+        <di:waypoint x="1385" y="845" />
+        <di:waypoint x="1385" y="880" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15_di" bpmnElement="Flow_15">
+        <di:waypoint x="1310" y="838" />
+        <di:waypoint x="1310" y="915" />
+        <di:waypoint x="1330" y="915" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16_di" bpmnElement="Flow_16">
+        <di:waypoint x="1510" y="915" />
+        <di:waypoint x="1560" y="915" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17_di" bpmnElement="Flow_17">
+        <di:waypoint x="1600" y="820" />
+        <di:waypoint x="1640" y="820" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18_di" bpmnElement="Flow_18">
+        <di:waypoint x="1790" y="820" />
+        <di:waypoint x="1830" y="820" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19_di" bpmnElement="Flow_19">
+        <di:waypoint x="1596" y="480" />
+        <di:waypoint x="1620" y="480" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_20_di" bpmnElement="Flow_20">
+        <di:waypoint x="1800" y="485" />
+        <di:waypoint x="1840" y="485" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_21_di" bpmnElement="Flow_21">
+        <di:waypoint x="1990" y="485" />
+        <di:waypoint x="1990" y="385" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_22_di" bpmnElement="Flow_22">
+        <di:waypoint x="2030" y="345" />
+        <di:waypoint x="2070" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_23_di" bpmnElement="Flow_23">
+        <di:waypoint x="1596" y="1060" />
+        <di:waypoint x="1620" y="1060" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_24_di" bpmnElement="Flow_24">
+        <di:waypoint x="1840" y="1060" />
+        <di:waypoint x="1880" y="1060" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_25_di" bpmnElement="Flow_25">
+        <di:waypoint x="2050" y="1060" />
+        <di:waypoint x="2090" y="1060" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_Audit_di" bpmnElement="Association_Audit">
+        <di:waypoint x="1640" y="910" />
+        <di:waypoint x="1410" y="835" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,1235 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cahier des charges · CasaMove</title>
+  <link rel="stylesheet" href="print.css" />
+</head>
+<body class="doc--cahier">
+
+<header class="cover">
+  <div class="cover__top">
+    <div class="cover__brand">
+      <span class="cover__mark"></span>
+      <span class="cover__name">CasaMove</span>
+    </div>
+    <p class="cover__kicker">Spécifications fonctionnelles et techniques</p>
+    <h1>Cahier des charges</h1>
+    <p class="cover__sub">Service client augmenté par agents IA, intégré au site du réseau</p>
+    <div class="cover__rule"></div>
+  </div>
+  <div>
+    <table class="cover__meta">
+      <tr><th>Projet</th><td>CasaMove, réseau de transport urbain</td></tr>
+      <tr><th>Version</th><td>1.1</td></tr>
+      <tr><th>Date</th><td>20 novembre 2026</td></tr>
+      <tr><th>Statut</th><td>Version de travail, soumise à validation</td></tr>
+      <tr><th>Périmètre</th><td>Chat in-page, réclamation, console agents, VoC</td></tr>
+    </table>
+    <p class="cover__foot">Document de travail. Toute diffusion hors équipe projet requiert l'accord du responsable de projet.</p>
+  </div>
+</header>
+<main>
+<h2>Sommaire</h2>
+<ol>
+<li>Contexte et objet</li>
+<li>Périmètre et hypothèses</li>
+<li>Acteurs et parcours</li>
+<li>Exigences fonctionnelles</li>
+<li>Exigences non fonctionnelles</li>
+<li>Architecture cible</li>
+<li>Données et interfaces</li>
+<li>Orchestration LangGraph.js</li>
+<li>Connaissance et qualité des réponses</li>
+<li>Sécurité et conformité</li>
+<li>Planning et jalons</li>
+<li>Recette et critères d&#39;acceptation</li>
+<li>Risques</li>
+<li>Livrables et gouvernance</li>
+<li>Annexe A, glossaire</li>
+<li>Annexe B, sources</li>
+</ol>
+<h2>Résumé exécutif</h2>
+<p>Le réseau CasaMove exploite un service client réparti entre un site institutionnel, un formulaire de contact, un standard téléphonique et un assistant WhatsApp. L&#39;usager doit changer de canal pour obtenir une information ou déposer une réclamation, et le suivi de dossier n&#39;existe pas en ligne.</p>
+<p>Le présent projet construit une alternative : un assistant conversationnel intégré à la page d&#39;accueil du site, disponible sans installation et sans quitter le navigateur, adossé à cinq agents spécialisés et à un superviseur. Le canal WhatsApp reste une extension ultérieure, pas un prérequis.</p>
+<p>Le document fixe le périmètre, les exigences mesurables, l&#39;architecture, le modèle de données, les contrats d&#39;interface, le planning et la recette. Il sert de référence contractuelle entre l&#39;équipe projet et le commanditaire pour les dix jours ouvrés de la V1.</p>
+<table>
+<thead>
+<tr>
+<th>Indicateur</th>
+<th>Valeur cible</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Agents spécialisés</td>
+<td>5, plus 1 superviseur</td>
+</tr>
+<tr>
+<td>Exigences fonctionnelles</td>
+<td>8, dont 6 Must</td>
+</tr>
+<tr>
+<td>Exigences non fonctionnelles</td>
+<td>6, dont 5 Must</td>
+</tr>
+<tr>
+<td>Durée de la V1</td>
+<td>10 jours ouvrés</td>
+</tr>
+<tr>
+<td>Cas de recette</td>
+<td>12</td>
+</tr>
+<tr>
+<td>Premier token, p95</td>
+<td>moins de 2 secondes</td>
+</tr>
+<tr>
+<td>Exactitude RAG</td>
+<td>85 % minimum</td>
+</tr>
+<tr>
+<td>Coût d&#39;exploitation</td>
+<td>moins de 300 MAD par mois</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Décision d&#39;architecture : LangGraph.js porte l&#39;orchestration et l&#39;état des dossiers. La V1 livrée utilise Next.js 16, LangGraph.js 1.7, Postgres 18 et un corpus local de dix-sept fiches issues du guide voyageurs 2026. La plateforme Agentic d&#39;ABA reste une cible V2 pour le flow de connaissance. La justification figure dans la note séparée, qui accompagne ce cahier des charges.</p>
+</blockquote>
+<h2>1. Contexte et objet</h2>
+<h3>1.1 Le réseau et le canal actuel</h3>
+<p>CasaMove est un opérateur de transport urbain à Casablanca, avec un réseau de tramway et de busway. Les informations publiques consultées le 17 novembre 2026 annoncent 151 stations et une fréquence moyenne de 8 minutes. Le site officiel du réseau organisé par RATP Dev Casablanca propose quatre entrées principales : à propos, se déplacer, ticket et abonnement, contact.</p>
+<p>Le service client existe sur trois canaux. Le téléphone, du lundi au samedi de 8 h à 20 h. Un formulaire de contact. Un assistant virtuel multilingue sur WhatsApp, lancé pour couvrir horaires, lignes, itinéraires, cartes, abonnements et signalements.</p>
+<h3>1.2 Limites du dispositif actuel</h3>
+<p>Quatre limites motivent le projet.</p>
+<ol>
+<li><strong>Rupture de canal.</strong> L&#39;usager qui consulte une ligne sur le site doit ouvrir WhatsApp pour poser sa question, puis revenir au site pour vérifier une information.</li>
+<li><strong>Absence de suivi.</strong> Une réclamation déposée sur WhatsApp ne produit ni numéro de dossier, ni échéance, ni historique consultable.</li>
+<li><strong>Proactivité nulle.</strong> Aucune alerte n&#39;est poussée vers l&#39;usager en cas de perturbation sur sa ligne ou d&#39;expiration de son abonnement.</li>
+<li><strong>Exploitation faible du feedback.</strong> Les réclamations ne sont pas agrégées en thèmes et en sentiment, donc les causes récurrentes restent invisibles.</li>
+</ol>
+<h3>1.3 Objet du document</h3>
+<p>Ce cahier des charges décrit la V1 du service client augmenté : ce qui est livré, comment, dans quel délai, et selon quels critères on accepte le résultat. Il ne décrit pas l&#39;application mobile, la boutique en ligne ni le canal WhatsApp.</p>
+<h3>1.4 Références</h3>
+<ul>
+<li>Document de cadrage « Service Client », cas fil rouge Casa Transport, Casatramway et Casabusway.</li>
+<li>Site public du réseau, consulté le 17 novembre 2026.</li>
+<li>Documentation LangGraph.js, persistance, interruptions et reprise.</li>
+<li>Documentation Next.js 16 et PostgreSQL 18.</li>
+<li>Loi marocaine 09-08 relative à la protection des personnes physiques à l&#39;égard du traitement des données à caractère personnel.</li>
+<li>Interface de staging de la plateforme Agentic d&#39;ABA, observée le 17 novembre 2026.</li>
+</ul>
+<h2>2. Périmètre et hypothèses</h2>
+<h3>2.1 Inclus dans la V1</h3>
+<table>
+<thead>
+<tr>
+<th>Élément</th>
+<th>Contenu</th>
+<th>Statut</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Page d&#39;accueil</td>
+<td>Reprise de la structure du site du réseau, marque fictive CasaMove, sans reprise d&#39;asset</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>Assistant</td>
+<td>Widget de chat intégré, trois langues, réponses sourcées, streaming</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>Réclamation</td>
+<td>Formulaire conversationnel, ticket, priorisation, échéance SLA, suivi par numéro</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>Validation humaine</td>
+<td>File d&#39;attente, approbation, édition ou rejet avant envoi</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>Console agents</td>
+<td>File SLA, dossier, brouillon, décision</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>Compte usager</td>
+<td>Inscription, connexion, suivi de ses dossiers</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>Sécurité de la console</td>
+<td>Authentification et RBAC admin ou user</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>VoC</td>
+<td>Sentiment et thèmes stockés à la création, agrégés depuis Postgres</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>Proactivité</td>
+<td>Alertes perturbation, information et renouvellement automatique poussées dans le chat</td>
+<td>Livré</td>
+</tr>
+</tbody></table>
+<h3>2.2 Exclu de la V1</h3>
+<p>Le paiement et la recharge, l&#39;application mobile native, l&#39;intégration WhatsApp Business, la connexion aux systèmes internes de CasaMove, la voix et le téléphone, l&#39;authentification des usagers par compte.</p>
+<h3>2.3 Hypothèses</h3>
+<ol>
+<li>Aucun accès aux back-offices de CasaMove. Les données de lignes, horaires et tarifs proviennent de sources publiques, figées dans un corpus versionné.</li>
+<li>Un seul développeur, à temps plein, sur dix jours ouvrés.</li>
+<li>La démonstration se fait sur un jeu de données de démonstration, sans donnée personnelle réelle.</li>
+<li>Les agents appellent un modèle via NVIDIA NIM, avec un repli déterministe si l&#39;appel échoue. La classification, la synthèse des réponses et la rédaction des brouillons passent par le modèle ; le retrieval et les règles métier restent dans le code.</li>
+<li>La plateforme ABA reste une cible V2 pour le flow de connaissance. La V1 n&#39;en dépend pas.</li>
+</ol>
+<h3>2.4 Contraintes</h3>
+<ul>
+<li>Marque fictive CasaMove, aucun logo, photo ou police repris du site du réseau.</li>
+<li>Aucune donnée personnelle réelle en environnement de démonstration.</li>
+<li>Coût d&#39;exploitation inférieur à 300 MAD par mois.</li>
+<li>Un seul déploiement Next.js, plus un cluster Postgres local géré par scripts.</li>
+</ul>
+<h2>3. Acteurs et parcours</h2>
+<h3>3.1 Acteurs</h3>
+<table>
+<thead>
+<tr>
+<th>Acteur</th>
+<th>Rôle</th>
+<th>Accès</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Usager</td>
+<td>Consulte, questionne, dépose et suit une réclamation</td>
+<td>Site public</td>
+</tr>
+<tr>
+<td>Agent de niveau 1</td>
+<td>Traite la file, valide ou corrige les brouillons</td>
+<td>Console, rôle agent</td>
+</tr>
+<tr>
+<td>Superviseur</td>
+<td>Arbitre les cas sensibles, surveille les SLA</td>
+<td>Console, rôle superviseur</td>
+</tr>
+<tr>
+<td>Responsable qualité</td>
+<td>Analyse le VoC, ajuste le corpus</td>
+<td>Console, lecture VoC</td>
+</tr>
+<tr>
+<td>Système</td>
+<td>Superviseur d&#39;agents, RAG, planificateur SLA</td>
+<td>Interne</td>
+</tr>
+</tbody></table>
+<h3>3.2 Parcours P1, information</h3>
+<ol>
+<li>L&#39;usager ouvre la page d&#39;accueil et clique sur le bouton d&#39;assistant.</li>
+<li>Il demande l&#39;horaire du dernier tramway ligne 1 en français.</li>
+<li>Le superviseur route vers l&#39;agent Support, qui interroge le corpus via l&#39;outil de connaissance.</li>
+<li>La réponse s&#39;affiche en streaming, avec la source et la date de mise à jour.</li>
+<li>Si le score de pertinence est insuffisant, l&#39;assistant propose le formulaire de réclamation.</li>
+</ol>
+<h3>3.3 Parcours P2, réclamation avec validation humaine</h3>
+<ol>
+<li>L&#39;usager signale un retard récurrent et un comportement inadéquat.</li>
+<li>L&#39;agent Réclamation qualifie le motif, détecte le risque, crée un ticket et calcule l&#39;échéance.</li>
+<li>Le brouillon de réponse est produit, puis bloqué par une interruption avant publication.</li>
+<li>L&#39;agent humain publie, édite ou rejette dans la console.</li>
+<li>Le dossier passe en cours. La conversation continue entre l&#39;agent et l&#39;usager.</li>
+<li>Après accord de l&#39;usager, l&#39;agent clôture le dossier. Une note de satisfaction 1 à 5 est demandée.</li>
+</ol>
+<h3>3.4 Parcours P3, proactivité</h3>
+<ol>
+<li>Le planificateur détecte une perturbation publiée sur une ligne suivie.</li>
+<li>L&#39;agent Succès client prépare une alerte personnalisée.</li>
+<li>La carte s&#39;affiche à la prochaine ouverture du chat, avec la source officielle.</li>
+<li>L&#39;usager peut demander un itinéraire de remplacement en un clic.</li>
+</ol>
+<h3>3.5 Parcours d&#39;échec</h3>
+<p>Si le modèle est indisponible, si la confiance d&#39;intention est inférieure à 0,55 ou si la question sort du corpus, l&#39;assistant l&#39;annonce, propose le formulaire et crée un ticket de niveau 3. Aucune réponse inventée n&#39;est envoyée.</p>
+<h2>4. Exigences fonctionnelles</h2>
+<h3>4.1 Vue d&#39;ensemble</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Exigence</th>
+<th>Priorité</th>
+<th>Critère d&#39;acceptation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>F1</td>
+<td>Chat intégré à la page</td>
+<td>Must</td>
+<td>Le widget s&#39;ouvre sans rechargement, la conversation survit à la navigation</td>
+</tr>
+<tr>
+<td>F2</td>
+<td>Multilingue FR, AR, EN</td>
+<td>Must</td>
+<td>Les trois langues répondent, l&#39;arabe s&#39;affiche en RTL</td>
+</tr>
+<tr>
+<td>F3</td>
+<td>Réponses sourcées</td>
+<td>Must</td>
+<td>Toute réponse factuelle cite au moins une source datée</td>
+</tr>
+<tr>
+<td>F4</td>
+<td>Réclamation et ticket</td>
+<td>Must</td>
+<td>Un ticket est créé avec numéro, priorité et échéance</td>
+</tr>
+<tr>
+<td>F5</td>
+<td>Validation humaine</td>
+<td>Must</td>
+<td>Aucun envoi de réclamation sans décision humaine tracée</td>
+</tr>
+<tr>
+<td>F6</td>
+<td>Proactivité</td>
+<td>Should</td>
+<td>Une alerte de perturbation apparaît dans le chat</td>
+</tr>
+<tr>
+<td>F7</td>
+<td>Console agents</td>
+<td>Must</td>
+<td>File triée par échéance, dossier consultable, décision enregistrée</td>
+</tr>
+<tr>
+<td>F8</td>
+<td>VoC</td>
+<td>Should</td>
+<td>Sentiment et six thèmes agrégés sur une période</td>
+</tr>
+</tbody></table>
+<h3>4.2 F1, chat intégré</h3>
+<p>Le widget est accessible depuis toutes les pages, par un bouton fixe en bas à droite. Il conserve la conversation lors d&#39;un changement de page, grâce à un identifiant de session en cookie. L&#39;ouverture ne déclenche aucune navigation. La fermeture ne supprime pas l&#39;historique de la session.</p>
+<h3>4.3 F2, multilingue</h3>
+<p>La langue est détectée sur le message, avec un sélecteur manuel qui prévaut. Les libellés de l&#39;interface proviennent d&#39;un dictionnaire typé, avec une clé obligatoire dans les trois langues, ce qui casse le build en cas d&#39;oubli. L&#39;arabe impose <code>dir=&quot;rtl&quot;</code> sur le conteneur de conversation, y compris pour les messages mixtes.</p>
+<h3>4.4 F3, réponses sourcées</h3>
+<p>Chaque réponse factuelle porte une source lisible : nom du document, section, date de dernière mise à jour. Une réponse sans source au-dessus du seuil de pertinence est remplacée par une proposition d&#39;escalade. Les sources sont affichées dans un panneau repliable, pas en note de bas de page.</p>
+<h3>4.5 F4, réclamation et ticket</h3>
+<p>Le parcours de réclamation collecte le motif, la ligne, la date, la description et un contact. Il produit un numéro lisible du type <code>CM-2026-000148</code>, une priorité et une échéance.</p>
+<table>
+<thead>
+<tr>
+<th>Priorité</th>
+<th>Motifs</th>
+<th>Échéance</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>P1</td>
+<td>Sécurité, agression, perturbation majeure</td>
+<td>4 heures</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>Remboursement, abonnement, préjudice financier</td>
+<td>24 heures</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>Information, suggestion, retard isolé</td>
+<td>72 heures</td>
+</tr>
+</tbody></table>
+<p>Le statut est consultable par numéro de ticket et par le même identifiant de session.</p>
+<h3>4.6 F5, validation humaine</h3>
+<p>Toute réponse de réclamation passe par une interruption avant publication. La console affiche le brouillon, la priorité, les sources et le motif d&#39;escalade. Trois décisions sont possibles : publier tel quel, éditer puis publier, rejeter avec motif. Chaque décision est horodatée et signée par l&#39;agent. La publication ouvre le dossier en <code>in_progress</code> ; elle ne le clôture pas. La clôture intervient après l&#39;accord de l&#39;usager, puis un feedback 1 à 5 est demandé.</p>
+<h3>4.7 F6, proactivité</h3>
+<p>Trois déclencheurs sont implémentés en V1 : perturbation publiée sur une ligne choisie, message d&#39;information personnalisé, et abonnement qui expire dans sept jours. La relance de renouvellement est automatique : un contrôle au démarrage du serveur, puis toutes les 24 heures, cible les abonnements à sept jours de l&#39;échéance, avec au plus une relance par usager et par jour et sans bouton manuel. L&#39;admin choisit la ligne, la sévérité et, pour un message libre, les titres et corps en français, arabe et anglais. Les alertes apparaissent dans le chat, jamais par notification push. Les perturbations ne sont pas plafonnées ; les relances et informations sont limitées à une par usager ou session et par jour. Chaque diffusion est enregistrée avec livraison, lecture et masquage. Masquer signifie que l&#39;usager a vu l&#39;alerte et la ferme ; ce n&#39;est pas une non-lecture.</p>
+<h3>4.8 F7, console agents</h3>
+<p>La console présente trois zones : file d&#39;attente triée par échéance, dossier du ticket avec historique, panneau de décision. La file se filtre par statut, priorité et langue, avec recherche par numéro, thème ou demande, et pagination. Le dossier affiche l&#39;usager, son abonnement, ses dossiers récents, l&#39;agent assigné et le journal des actions. La conversation s&#39;ouvre dans un panneau de chat dédié, séparé de la fiche. L&#39;agent répond, demande la confirmation de clôture, puis clôture le dossier. Un badge, une bannière et une pastille signalent les nouveaux messages usager. Le chat usager affiche une notification système à chaque réponse de l&#39;agent. L&#39;usager peut noter sa satisfaction de 1 à 5. Un compteur de dépassement SLA et trois indicateurs de santé, Postgres, LLM et embeddings, sont visibles en permanence.</p>
+<h3>4.9 F8, VoC</h3>
+<p>Le tableau agrège les tickets par volume, thème, ligne, priorité, statut et sentiment. Les thèmes et le sentiment sont classés à la création par le modèle, avec une taxonomie imposée de six valeurs : ponctualité, information, propreté, sécurité, accessibilité, abonnement. La ligne est extraite du message à la création. Le repli lexical couvre l&#39;échec du modèle. Le script <code>npm run tickets:reclassify</code> reclasse l&#39;historique et recalcule les échéances SLA ; <code>npm run tickets:lines</code> rattache les anciens dossiers à leur ligne. Le sélecteur couvre 7 jours, 30 jours ou tout l&#39;historique, avec comparaison à la période précédente. Le volume reste affiché sur sept jours. L&#39;export CSV, le drill-down d&#39;un thème ou d&#39;une ligne vers la file et les trois verbatims négatifs par thème sont livrés. La segmentation par station reste en V2.</p>
+<h2>5. Exigences non fonctionnelles</h2>
+<h3>5.1 Vue d&#39;ensemble</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Exigence</th>
+<th>Priorité</th>
+<th>Cible</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>NF1</td>
+<td>Performance</td>
+<td>Must</td>
+<td>Premier token p95 sous 2 s, réponse complète sous 8 s</td>
+</tr>
+<tr>
+<td>NF2</td>
+<td>Disponibilité</td>
+<td>Should</td>
+<td>99 % mensuel, dégradation gracieuse</td>
+</tr>
+<tr>
+<td>NF3</td>
+<td>Accessibilité</td>
+<td>Must</td>
+<td>WCAG 2.2 niveau AA</td>
+</tr>
+<tr>
+<td>NF4</td>
+<td>Sécurité et conformité</td>
+<td>Must</td>
+<td>Loi 09-08, rétention définie, PII masquées</td>
+</tr>
+<tr>
+<td>NF5</td>
+<td>Auditabilité</td>
+<td>Must</td>
+<td>Journal en ajout seul, chaîne de hachage, rejeu</td>
+</tr>
+<tr>
+<td>NF6</td>
+<td>Coût et exploitabilité</td>
+<td>Must</td>
+<td>Moins de 300 MAD par mois, un seul déploiement</td>
+</tr>
+</tbody></table>
+<h3>5.2 NF1, performance</h3>
+<p>Le premier token mesure le délai entre l&#39;envoi du message et le premier fragment affiché. Il est mesuré côté serveur et côté client, et affiché dans la console d&#39;administration. La page d&#39;accueil vise un LCP sous 2,5 secondes sur une connexion 4G.</p>
+<h3>5.3 NF2, disponibilité</h3>
+<p>En cas d&#39;indisponibilité du modèle, le chat bascule sur un message explicite et un formulaire de ticket. Il ne reste jamais bloqué sur un indicateur de chargement. Le flux SSE se termine toujours par un événement <code>done</code> ou <code>error</code>.</p>
+<h3>5.4 NF3, accessibilité</h3>
+<p>Navigation clavier complète, focus visible, contraste minimal de 4,5 pour 1, cible tactile de 44 pixels, région <code>aria-live</code> pour le streaming, libellés explicites sur les champs. Le contenu arabe est testé au clavier en RTL.</p>
+<h3>5.5 NF4, sécurité et conformité</h3>
+<p>Les données collectées sont limitées au nécessaire : prénom ou pseudonyme, langue, ligne, contenu du message, contact si l&#39;usager le fournit. Les numéros de téléphone et adresses e-mail sont masqués dans les journaux. La rétention est de 90 jours pour les messages, 12 mois pour les tickets, 6 mois pour les journaux techniques. Une déclaration CNDP est à prévoir avant toute mise en production réelle.</p>
+<h3>5.6 NF5, auditabilité</h3>
+<p>Chaque étape du graphe est enregistrée sous forme de checkpoint horodaté. En V1, les tickets et les checkpoints en base permettent de reconstituer un dossier et de rejouer une décision. Le journal en ajout seul avec chaîne de hachage et le rejeu complet restent à livrer en V2.</p>
+<h3>5.7 NF6, coût et exploitabilité</h3>
+<p>Un front statique, une API dans le même déploiement Next.js, une base Postgres unique pour les tickets et les checkpoints. Le retrieval V1 combine un routeur documentaire LLM sur 17 fiches, des embeddings précalculés pour 51 passages et un repli lexical. Le budget inclut l&#39;hébergement, le nom de domaine et les appels de modèle sur le volume de démonstration.</p>
+<h2>6. Architecture cible</h2>
+<h3>6.1 Vue d&#39;ensemble</h3>
+<pre><code>Navigateur
+  Next.js, page publique, widget chat, console agents
+        |
+        | HTTPS, SSE
+        v
+Next.js route handler /api/chat   (runtime Node)
+        |
+        +----&gt; LangGraph.js, état, routage, interruption, reprise
+        |           |
+        |           +----&gt; corpus multilingue, routeur documentaire
+        |           |
+        |           +----&gt; flow Agentic ABA, cible V2
+        |
+        +----&gt; Postgres 18, tickets et checkpoints LangGraph.js
+</code></pre>
+<h3>6.2 Composants</h3>
+<table>
+<thead>
+<tr>
+<th>Composant</th>
+<th>Technologie</th>
+<th>Responsabilité</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Site public</td>
+<td>Next.js 16, CSS design system</td>
+<td>Page d&#39;accueil, widget, accessibilité</td>
+</tr>
+<tr>
+<td>Console</td>
+<td>Next.js, même déploiement</td>
+<td>File SLA, dossier, décision</td>
+</tr>
+<tr>
+<td>API</td>
+<td>Route handlers Next.js, runtime Node</td>
+<td>Streaming SSE, tickets, administration</td>
+</tr>
+<tr>
+<td>Orchestration</td>
+<td>LangGraph.js 1.7</td>
+<td>État partagé, routage, HITL, reprise</td>
+</tr>
+<tr>
+<td>Connaissance</td>
+<td>Corpus TypeScript, routeur LLM, embeddings JSON</td>
+<td>17 fiches du guide, 3 langues, citations</td>
+</tr>
+<tr>
+<td>Modèle</td>
+<td>NVIDIA NIM, <code>nemotron-3.5-bolt-e4b</code></td>
+<td>Classification, synthèse ancrée, brouillons</td>
+</tr>
+<tr>
+<td>Persistance</td>
+<td>Postgres 18, <code>PostgresSaver</code></td>
+<td>Tickets, checkpoints, reprise</td>
+</tr>
+<tr>
+<td>Composants</td>
+<td>Plateforme Agentic ABA</td>
+<td>Flow de connaissance, cible V2</td>
+</tr>
+</tbody></table>
+<h3>6.3 Choix techniques</h3>
+<p>Next.js est retenu pour garder une seule origine, un seul déploiement et un flux SSE simple. LangGraph.js est retenu parce qu&#39;il offre les mêmes primitives que la version Python, <code>StateGraph</code>, checkpointer, <code>interrupt</code> et reprise, sans ajouter un second runtime. Le corpus V1 est assez petit pour un routeur documentaire LLM sur catalogue complet, avec embeddings et lexical en secours, sans magasin vectoriel. Postgres 18 porte à la fois les tickets et les checkpoints, ce qui rend la reprise vérifiable après un redémarrage complet du serveur.</p>
+<h3>6.4 Environnements</h3>
+<table>
+<thead>
+<tr>
+<th>Environnement</th>
+<th>Usage</th>
+<th>Données</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Local</td>
+<td>Développement, tests</td>
+<td>Postgres local, port 5544, corpus public</td>
+</tr>
+<tr>
+<td>Démo</td>
+<td>Jury, client</td>
+<td>Postgres local, tickets de démonstration</td>
+</tr>
+<tr>
+<td>Production</td>
+<td>Hors périmètre V1</td>
+<td>Non applicable</td>
+</tr>
+</tbody></table>
+<p>Le cluster Postgres est dédié au projet, avec un répertoire de données <code>.pgdata</code> et une authentification locale limitée à la machine. Les scripts <code>npm run db:start</code>, <code>db:stop</code> et <code>db:status</code> gèrent son cycle de vie.</p>
+<h2>7. Données et interfaces</h2>
+<h3>7.1 Modèle de données</h3>
+<p>Tables livrées en V1 :</p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Champs clés</th>
+<th>Rôle</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>tickets</code></td>
+<td>number, status, priority, theme, sentiment, line, locale, thread_id, user_id, assigned_to, assigned_at, user_query, draft, created_at, sla_deadline, resolved_at, csat_score, csat_at</td>
+<td>Dossier, brouillon, assignation, ligne, clôture et CSAT</td>
+</tr>
+<tr>
+<td><code>checkpoints</code></td>
+<td>thread_id, checkpoint, metadata</td>
+<td>État du graphe à chaque nœud</td>
+</tr>
+<tr>
+<td><code>checkpoint_blobs</code></td>
+<td>thread_id, channel, version, value</td>
+<td>Valeurs sérialisées</td>
+</tr>
+<tr>
+<td><code>checkpoint_writes</code></td>
+<td>thread_id, task_id, idx, value</td>
+<td>Écritures intermédiaires</td>
+</tr>
+<tr>
+<td><code>checkpoint_migrations</code></td>
+<td>version</td>
+<td>Suivi du schéma LangGraph</td>
+</tr>
+<tr>
+<td><code>users</code></td>
+<td>id, email, password_hash, full_name, phone, role, locale</td>
+<td>Comptes usagers et administrateurs</td>
+</tr>
+<tr>
+<td><code>sessions</code></td>
+<td>token_hash, user_id, expires_at</td>
+<td>Sessions de connexion</td>
+</tr>
+<tr>
+<td><code>subscriptions</code></td>
+<td>user_id, plan, status, started_at, ends_at, auto_renew</td>
+<td>Abonnement de démonstration, lecture seule</td>
+</tr>
+<tr>
+<td><code>signals</code></td>
+<td>kind, line, user_id, severity, created_by, created_by_email, payload, expires_at</td>
+<td>Alertes globales, ciblées ou personnalisées</td>
+</tr>
+<tr>
+<td><code>signal_deliveries</code></td>
+<td>signal_id, user_id, session_id, delivered_at, read_at, dismissed_at</td>
+<td>Diffusion, lecture et masquage d&#39;une alerte</td>
+</tr>
+<tr>
+<td><code>ticket_decisions</code></td>
+<td>ticket_number, action, comment, admin_id, admin_email, created_at</td>
+<td>Journal des décisions humaines</td>
+</tr>
+<tr>
+<td><code>ticket_events</code></td>
+<td>ticket_number, event, actor_id, actor_email, detail, created_at</td>
+<td>Journal des actions, création et assignation comprises</td>
+</tr>
+<tr>
+<td><code>ticket_messages</code></td>
+<td>ticket_number, role, body, author_email, created_at</td>
+<td>Conversation usager, agent et système</td>
+</tr>
+</tbody></table>
+<p>Tables prévues en V2 :</p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Rôle</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>audit</code></td>
+<td>Journal en ajout seul, chaîne de hachage</td>
+</tr>
+<tr>
+<td><code>document</code></td>
+<td>Corpus versionné et empreintes</td>
+</tr>
+<tr>
+<td><code>sla_event</code></td>
+<td>Échéances, relances, réassignations</td>
+</tr>
+</tbody></table>
+<p>L&#39;identifiant de conversation est généré côté navigateur et conservé dans <code>sessionStorage</code>. Le serveur en dérive un thread par message (<code>sessionId:uuid</code>) : un dossier en attente de validation ne bloque pas la conversation suivante.</p>
+<h3>7.2 Contrats d&#39;interface</h3>
+<table>
+<thead>
+<tr>
+<th>Méthode</th>
+<th>Route</th>
+<th>Rôle</th>
+<th>Statut</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>POST</td>
+<td><code>/api/chat</code></td>
+<td>Envoi d&#39;un message, réponse SSE</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/tickets</code></td>
+<td>File complète pour la console</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/tickets/{number}</code></td>
+<td>Suivi usager, fiche et journal pour l&#39;admin</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/tickets/{number}/decision</code></td>
+<td>Publication ou rejet, reprise du graphe</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/tickets/{number}/messages</code></td>
+<td>Conversation du dossier</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/tickets/{number}/messages</code></td>
+<td>Réponse de l&#39;agent depuis la console</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/tickets/{number}/resolve</code></td>
+<td>Clôture avec accord de l&#39;usager</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/tickets/{number}/csat</code></td>
+<td>Note de satisfaction 1 à 5</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/tickets/{number}/assign</code></td>
+<td>Assignation ou désassignation d&#39;un agent</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/admin/agents</code></td>
+<td>Liste des agents administrateurs</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/health/status</code></td>
+<td>Santé Postgres, LLM et embeddings</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/register</code></td>
+<td>Création d&#39;un compte usager</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/login</code></td>
+<td>Connexion, session cookie</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/auth/logout</code></td>
+<td>Fermeture de session</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/auth/me</code></td>
+<td>Utilisateur courant</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/voc</code></td>
+<td>Agrégats VoC par période et ligne, thèmes, priorités, volume et verbatims</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/voc/export</code></td>
+<td>Export CSV de la période, éventuellement filtré par thème</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/signals</code></td>
+<td>Alertes actives, filtrées par usager et session</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/signals</code></td>
+<td>Publication d&#39;une perturbation ou d&#39;une information ; la relance d&#39;abonnement est automatique et refusée en manuel</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/signals/{id}/read</code></td>
+<td>Marque une alerte comme lue à l&#39;ouverture du chat</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/signals/{id}/dismiss</code></td>
+<td>Masquage d&#39;une alerte par l&#39;usager</td>
+<td>Livré</td>
+</tr>
+</tbody></table>
+<h3>7.3 Événements SSE</h3>
+<table>
+<thead>
+<tr>
+<th>Événement</th>
+<th>Charge utile</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>meta</code></td>
+<td>session, intent, confiance</td>
+<td>Début de traitement</td>
+</tr>
+<tr>
+<td><code>token</code></td>
+<td>fragment de texte</td>
+<td>Streaming</td>
+</tr>
+<tr>
+<td><code>sources</code></td>
+<td>liste de documents cités</td>
+<td>Panneau de sources</td>
+</tr>
+<tr>
+<td><code>ticket</code></td>
+<td>numéro, priorité, échéance</td>
+<td>Carte de suivi</td>
+</tr>
+<tr>
+<td><code>hitl</code></td>
+<td>ticket, statut en attente</td>
+<td>Message d&#39;attente</td>
+</tr>
+<tr>
+<td><code>done</code></td>
+<td>latence, coût</td>
+<td>Fin normale</td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>code, message</td>
+<td>Fin dégradée</td>
+</tr>
+</tbody></table>
+<h3>7.4 Rétention et purge</h3>
+<p>Une tâche planifiée quotidienne supprime les messages au-delà de 90 jours, anonymise les tickets au-delà de 12 mois et purge les journaux au-delà de 6 mois. La purge est journalisée et ne peut pas être désactivée depuis l&#39;interface.</p>
+<h2>8. Orchestration LangGraph.js</h2>
+<h3>8.1 État partagé</h3>
+<pre><code class="language-ts">const AgentState = Annotation.Root({
+  query: Annotation&lt;string&gt;(),
+  locale: Annotation&lt;Locale&gt;(),
+  sessionId: Annotation&lt;string&gt;(),
+  intent: Annotation&lt;Intent&gt;(),
+  confidence: Annotation&lt;number&gt;(),
+  reply: Annotation&lt;string&gt;(),
+  sources: Annotation&lt;Source[]&gt;({ reducer: (_c, next) =&gt; next, default: () =&gt; [] }),
+  ticket: Annotation&lt;Ticket | null&gt;({ reducer: (_c, next) =&gt; next, default: () =&gt; null }),
+  decision: Annotation&lt;HitlDecision | null&gt;({ reducer: (_c, next) =&gt; next, default: () =&gt; null }),
+});
+</code></pre>
+<p>Le superviseur remet à zéro <code>reply</code>, <code>sources</code>, <code>ticket</code> et <code>decision</code> à chaque nouveau tour, ce qui évite qu&#39;un dossier traité réapparaisse dans la conversation suivante.</p>
+<h3>8.2 Nœuds</h3>
+<table>
+<thead>
+<tr>
+<th>Nœud</th>
+<th>Rôle</th>
+<th>Sortie</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>supervisor</code></td>
+<td>Classifie par règles lexicales, remet l&#39;état à zéro, route</td>
+<td><code>intent</code>, <code>confidence</code></td>
+</tr>
+<tr>
+<td><code>knowledge</code></td>
+<td>Routeur documentaire, retrieval hybride de secours, réponse citée</td>
+<td><code>reply</code>, <code>sources</code></td>
+</tr>
+<tr>
+<td><code>complaint</code></td>
+<td>Qualifie, crée le ticket en base, prépare le brouillon</td>
+<td><code>ticket</code></td>
+</tr>
+<tr>
+<td><code>hitl</code></td>
+<td>Suspend avant envoi, reprend sur <code>Command</code></td>
+<td><code>decision</code></td>
+</tr>
+<tr>
+<td><code>support</code></td>
+<td>Répond aux demandes transactionnelles : statut d&#39;un dossier, mes dossiers, perturbation de ligne</td>
+<td><code>reply</code>, <code>ticket</code></td>
+</tr>
+<tr>
+<td><code>conversation</code></td>
+<td>Répond aux salutations, à l&#39;identité et aux capacités de l&#39;assistant</td>
+<td><code>reply</code></td>
+</tr>
+</tbody></table>
+<p>Les agents Success et VoC tournent hors du graphe conversationnel : Success via le service de signaux, VoC via l&#39;agrégation des tickets. Le superviseur ne les appelle pas.</p>
+<h3>8.3 Routage</h3>
+<p>Le superviseur appelle le modèle NVIDIA pour classer le message en information, réclamation, support, conversation ou inconnu, avec une confiance retournée. Si l&#39;appel échoue ou renvoie un format invalide, un classifieur lexical par langue prend le relais avec les seuils 0,9, 0,85 et 0,4. Une puce Réclamation peut aussi forcer l&#39;intention côté client, sans phrase préfabriquée : le ticket reprend alors le texte exact de l&#39;usager. L&#39;issue support couvre les demandes transactionnelles, traitées par des outils : statut d&#39;un dossier, liste de ses dossiers, perturbation active sur une ligne. L&#39;issue conversation couvre les salutations, l&#39;identité de l&#39;assistant, ses capacités et les remerciements, sans retrieval ni ticket.</p>
+<h3>8.4 Validation humaine</h3>
+<p><code>hitl</code> appelle <code>interrupt()</code> avec le ticket et le brouillon. La console appelle <code>POST /api/tickets/{number}/decision</code>, qui reprend le graphe avec <code>Command({ resume: { action, comment } })</code> sur le même <code>thread_id</code>. En V1, aucune relance automatique d&#39;échéance SLA : les dépassements sont visibles dans la file. La relance d&#39;abonnement, elle, est automatique. Le planificateur externe reste au périmètre V2.</p>
+<h3>8.5 Persistance et reprise</h3>
+<p>Le checkpointer <code>PostgresSaver</code> enregistre l&#39;état à chaque nœud dans Postgres. Chaque message ouvre un thread court, formé de l&#39;identifiant de session et d&#39;un UUID. Le dossier en attente conserve son propre thread dans <code>ticket.thread_id</code>, ce qui permet à la console de le reprendre sans bloquer la conversation. Test effectué le 20 novembre : ticket créé, messages suivants traités normalement, approbation reçue après redémarrage, statut mis à jour.</p>
+<h3>8.6 Erreurs</h3>
+<p>Le flux SSE se termine toujours par un événement <code>done</code> ou <code>error</code>. Une erreur de graphe est journalisée côté serveur et renvoyée comme événement <code>error</code>, puis le client affiche un message de reprise. Les retries par nœud et le disjoncteur restent au périmètre V2.</p>
+<h2>9. Connaissance et qualité des réponses</h2>
+<h3>9.1 Corpus</h3>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Contenu</th>
+<th>Format</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Corpus applicatif</td>
+<td>17 fiches : réseau, horaires, tarifs, achat, abonnement, correspondances, stations de correspondance, règles, accessibilité, objets perdus, agences, fréquences, lignes, procédure de réclamation, suivi, contact, réclamation</td>
+<td>TypeScript, <code>lib/agent/corpus.ts</code></td>
+</tr>
+<tr>
+<td>Embeddings</td>
+<td>51 vecteurs, 17 fiches × 3 langues, 1024 dimensions</td>
+<td>JSON, <code>lib/agent/embeddings.json</code></td>
+</tr>
+</tbody></table>
+<p>Chaque fiche porte un titre, un corps et une source par langue. Le corpus est versionné dans le dépôt, et la source affichée dans le chat est localisée.</p>
+<h3>9.2 Ingestion</h3>
+<p>Les fiches restent la source de vérité. La commande <code>npm run embeddings:build</code> encode chaque fiche dans les trois langues avec <code>nvidia/nemotron-3.5-embed-1b</code>, en 1024 dimensions, puis écrit <code>lib/agent/embeddings.json</code>. Le fichier contient le modèle, la taille, un hash du corpus et 51 vecteurs. Il est chargé en mémoire au démarrage. Si le hash ne correspond plus au corpus, le retrieval ignore les vecteurs et repasse au lexical. Aucune base vectorielle n&#39;est nécessaire pour 17 fiches.</p>
+<h3>9.3 Retrieval</h3>
+<p>Le routeur documentaire est la couche principale quand le modèle est disponible. Il reçoit la question et le catalogue complet des 17 fiches, avec titre, mots-clés et corps. Il sélectionne au maximum trois fiches et doit citer pour chacune une phrase exacte du corps. La citation est vérifiée comme sous-chaîne du document ; une fiche dont la preuve ne correspond pas est écartée. Si aucune fiche ne répond, l&#39;assistant refuse.</p>
+<p>Le retrieval hybride reste le repli quand le modèle est indisponible ou échoue :</p>
+<ol>
+<li>Le score lexical donne 2 points par mot-clé présent et 1 point par mot commun avec le titre ou le corps, sans double comptage.</li>
+<li>Le score dense est le cosinus entre l&#39;embedding de la question et celui de la fiche, par langue.</li>
+<li>La fusion pondère le lexical normalisé à 0,65 et le dense à 0,35.</li>
+<li>Si le lexical est faible mais que le dense confirme la même fiche, la réponse est acceptée.</li>
+<li>Sinon, le message de repli est renvoyé.</li>
+</ol>
+<p>Les résultats du routeur sont mis en cache par question normalisée. Les alias du corpus restent utiles au repli lexical, mais ils ne sont plus le mécanisme principal. Le nœud Knowledge transmet les fiches sélectionnées au modèle avec interdiction d&#39;ajouter des faits. Les sources sont renvoyées séparément et les refus ne portent aucune source.</p>
+<h3>9.4 Évaluation</h3>
+<table>
+<thead>
+<tr>
+<th>Indicateur</th>
+<th>Seuil</th>
+<th>Méthode</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Exactitude</td>
+<td>85 %</td>
+<td>Jeu de questions de référence, notation humaine</td>
+</tr>
+<tr>
+<td>Citation</td>
+<td>100 % des réponses factuelles</td>
+<td>Vérification automatique</td>
+</tr>
+<tr>
+<td>Affirmation non étayée</td>
+<td>moins de 5 %</td>
+<td>Relecture de 20 réponses</td>
+</tr>
+<tr>
+<td>Refus correct</td>
+<td>100 % sur 5 questions hors corpus</td>
+<td>Jeu dédié</td>
+</tr>
+<tr>
+<td>Routage</td>
+<td>90 %</td>
+<td>Jeu de 30 phrases</td>
+</tr>
+</tbody></table>
+<p>Le jeu de recette couvre les reformulations, l&#39;arabe, l&#39;anglais, les refus et les pannes d&#39;API. Le smoke test <code>npm run test:smoke</code> vérifie le routeur documentaire et le retrieval dense avec l&#39;API réelle, sur 9 cas. Les 108 tests locaux tournent sans réseau, avec <code>EMBEDDINGS_ENABLED=false</code>.</p>
+<h2>10. Sécurité et conformité</h2>
+<h3>10.1 Données personnelles</h3>
+<p>Collecte minimale, pas de compte usager en V1, pas de géolocalisation. Le contact n&#39;est demandé que pour une réclamation, et il est facultatif.</p>
+<h3>10.2 Base légale et consentement</h3>
+<p>Le traitement repose sur l&#39;exécution du service demandé. Un encart explique l&#39;usage des données avant le premier message. Aucune donnée n&#39;est utilisée pour entraîner un modèle. Une déclaration CNDP est requise avant mise en production.</p>
+<h3>10.3 Journalisation</h3>
+<p>Les numéros de téléphone, adresses e-mail et numéros de carte sont masqués avant écriture. Les journaux ne contiennent jamais le contenu brut d&#39;une réclamation sensible, seulement son empreinte.</p>
+<h3>10.4 Accès</h3>
+<p>Authentification par email et mot de passe. Les mots de passe sont hachés avec scrypt, les sessions vivent dans un cookie httpOnly de sept jours et le jeton est stocké haché en base. Deux rôles : user pour les usagers, admin pour la console. La console et ses API refusent tout compte non admin, par redirection vers <code>/login</code> ou erreur 403. Les comptes admin sont créés par <code>npm run db:admin</code>, jamais par le formulaire public. Limites V2 : pas de limitation de débit, pas de double facteur, pas de journal des connexions.</p>
+<h3>10.5 Propriété intellectuelle</h3>
+<p>La marque CasaMove est fictive. Aucun logo, photo, icône ou police du site du réseau n&#39;est réutilisé. Les données factuelles publiques sont citées avec leur source et leur date.</p>
+<h2>11. Planning et jalons</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Travaux</th>
+<th>Statut</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>J1 et J2</td>
+<td>Page d&#39;accueil, header, hero, tuiles, actus, footer, trois langues</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>J3</td>
+<td>Widget chat, streaming réel, réponses rapides, RTL</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>J4 et J5</td>
+<td>Graphe superviseur, agents Support et Knowledge, RAG, SSE</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>J6 et J7</td>
+<td>Réclamation, ticket, SLA, interruption, console de décision</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>J8</td>
+<td>VoC, agrégats, classification stockée</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>J9</td>
+<td>Proactivité, alertes, composeur et suivi de diffusion</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>J10</td>
+<td>Plateforme ABA, comparaison, répétition de la démo, PDF</td>
+<td>Partiel : démo et PDF prêts, flow ABA non branché</td>
+</tr>
+<tr>
+<td>J11</td>
+<td>Authentification, RBAC, comptes usagers</td>
+<td>Livré</td>
+</tr>
+<tr>
+<td>J12</td>
+<td>Agents LLM NVIDIA, repli déterministe</td>
+<td>Livré</td>
+</tr>
+</tbody></table>
+<p>Chaque jalon se termine par une démonstration de dix minutes et une liste d&#39;écarts. Un jalon non tenu se rattrape le jour suivant, jamais en réduisant la recette.</p>
+<h2>12. Recette et critères d&#39;acceptation</h2>
+<h3>12.1 Stratégie</h3>
+<p>Tests unitaires sur le routage et les outils, tests d&#39;intégration sur les routes, tests de bout en bout sur les trois parcours, évaluation du RAG sur un jeu de questions de référence. Les tests tournent en local et en intégration continue.</p>
+<h3>12.2 Cas de recette</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Scénario</th>
+<th>Attendu</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>T01</td>
+<td>Horaire de la ligne 1 en français</td>
+<td>Réponse citée, source datée</td>
+</tr>
+<tr>
+<td>T02</td>
+<td>Même question en arabe</td>
+<td>Réponse en arabe, rendu RTL correct</td>
+</tr>
+<tr>
+<td>T03</td>
+<td>Question hors corpus</td>
+<td>Refus explicite, proposition de ticket</td>
+</tr>
+<tr>
+<td>T04</td>
+<td>Tarif étudiant</td>
+<td>Montant exact, source citée</td>
+</tr>
+<tr>
+<td>T05</td>
+<td>Réclamation pour retard</td>
+<td>Ticket P3, échéance 72 h</td>
+</tr>
+<tr>
+<td>T06</td>
+<td>Réclamation pour agression</td>
+<td>Ticket P1, échéance 4 h, HITL</td>
+</tr>
+<tr>
+<td>T07</td>
+<td>Publication du brouillon</td>
+<td>Dossier en cours, décision tracée</td>
+</tr>
+<tr>
+<td>T08</td>
+<td>Édition puis publication</td>
+<td>Version éditée en base, historique complet</td>
+</tr>
+<tr>
+<td>T09</td>
+<td>Dépassement de 4 h sans décision</td>
+<td>Réassignation au superviseur</td>
+</tr>
+<tr>
+<td>T10</td>
+<td>Coupure du modèle</td>
+<td>Message dégradé, ticket créé, pas de blocage</td>
+</tr>
+<tr>
+<td>T11</td>
+<td>Injection de prompt</td>
+<td>Refus, journalisation, aucune fuite</td>
+</tr>
+<tr>
+<td>T12</td>
+<td>Accès console sans rôle</td>
+<td>Refus 403, tentative journalisée</td>
+</tr>
+<tr>
+<td>T13</td>
+<td>Discussion puis clôture</td>
+<td>Messages échangés, dossier résolu après accord</td>
+</tr>
+<tr>
+<td>T14</td>
+<td>Feedback de satisfaction</td>
+<td>Note 1 à 5 stockée et agrégée dans le VoC</td>
+</tr>
+</tbody></table>
+<p>État au 24 novembre : T01 à T08, T13 et T14 sont validés. T12 est partiellement couvert : refus par redirection et erreur 403. T09, T10 et T11 restent hors V1 : pas de relance SLA à l&#39;échéance, pas de test de coupure ni d&#39;injection.</p>
+<h3>12.3 Critères d&#39;acceptation</h3>
+<ol>
+<li>Les six exigences fonctionnelles Must passent leur critère.</li>
+<li>Aucun cas de recette bloquant en échec.</li>
+<li>Premier token sous 2 secondes au 95e centile sur le jeu de démonstration.</li>
+<li>Exactitude RAG supérieure ou égale à 85 %.</li>
+<li>Aucune donnée personnelle en clair dans les journaux.</li>
+<li>Parcours clavier complet sur les trois langues.</li>
+</ol>
+<h2>13. Risques</h2>
+<table>
+<thead>
+<tr>
+<th>Risque</th>
+<th>Probabilité</th>
+<th>Impact</th>
+<th>Parade</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Données de transport obsolètes</td>
+<td>Élevée</td>
+<td>Moyen</td>
+<td>Source affichée, revue du corpus, date de mise à jour</td>
+</tr>
+<tr>
+<td>Écart entre le corpus et la réalité terrain</td>
+<td>Moyenne</td>
+<td>Élevé</td>
+<td>Fiches datées, revue trimestrielle, refus hors seuil</td>
+</tr>
+<tr>
+<td>Indisponibilité de Postgres</td>
+<td>Faible</td>
+<td>Élevé</td>
+<td>Scripts <code>db:start</code> et <code>db:status</code>, données persistées</td>
+</tr>
+<tr>
+<td>Accès non protégé à la console</td>
+<td>Moyenne</td>
+<td>Moyen</td>
+<td>Réseau local, authentification avant production</td>
+</tr>
+<tr>
+<td>Charge de démonstration</td>
+<td>Faible</td>
+<td>Moyen</td>
+<td>File d&#39;attente, limite de débit en V2</td>
+</tr>
+<tr>
+<td>Contournement de la validation</td>
+<td>Faible</td>
+<td>Critique</td>
+<td>Interruption obligatoire, décision tracée, tests T05 à T08</td>
+</tr>
+</tbody></table>
+<h2>14. Livrables et gouvernance</h2>
+<h3>14.1 Livrables</h3>
+<ol>
+<li>Dépôt Git avec le front, l&#39;API, le graphe, le corpus et les scripts de base.</li>
+<li>Ce cahier des charges et la note de justification, en PDF.</li>
+<li>Jeu de recette de 12 cas et résultats des tests manuels.</li>
+<li>Script de démonstration de cinq minutes.</li>
+<li>Console agents et cluster Postgres de démonstration.</li>
+</ol>
+<h3>14.2 Points de décision</h3>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Décision</th>
+<th>Décideur</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>J2</td>
+<td>Validation du rendu visuel</td>
+<td>Commanditaire</td>
+</tr>
+<tr>
+<td>J5</td>
+<td>Validation du périmètre RAG</td>
+<td>Commanditaire et qualité</td>
+</tr>
+<tr>
+<td>J7</td>
+<td>Validation du parcours de réclamation</td>
+<td>Commanditaire</td>
+</tr>
+<tr>
+<td>J10</td>
+<td>Recette finale</td>
+<td>Commanditaire</td>
+</tr>
+</tbody></table>
+<h3>14.3 Gouvernance</h3>
+<p>Un point de quinze minutes chaque matin, un compte rendu écrit chaque soir, une revue de jalon. Toute demande hors périmètre est consignée et traitée après la V1.</p>
+<h2>15. Annexe A, glossaire</h2>
+<table>
+<thead>
+<tr>
+<th>Terme</th>
+<th>Définition</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HITL</td>
+<td>Human in the loop, validation humaine avant une action sensible</td>
+</tr>
+<tr>
+<td>RAG</td>
+<td>Retrieval augmented generation, réponse adossée à des documents</td>
+</tr>
+<tr>
+<td>SLA</td>
+<td>Engagement de délai de traitement</td>
+</tr>
+<tr>
+<td>SSE</td>
+<td>Server-sent events, flux de réponse en streaming</td>
+</tr>
+<tr>
+<td>Checkpointer</td>
+<td>Mécanisme qui enregistre l&#39;état du graphe à chaque étape</td>
+</tr>
+<tr>
+<td>VoC</td>
+<td>Voice of customer, analyse des retours usagers</td>
+</tr>
+<tr>
+<td>TTFT</td>
+<td>Time to first token, délai avant le premier fragment</td>
+</tr>
+<tr>
+<td>RTL</td>
+<td>Right to left, sens de lecture arabe</td>
+</tr>
+</tbody></table>
+<h2>16. Annexe B, sources</h2>
+<ol>
+<li>Document de cadrage « Service Client », cas fil rouge Casa Transport.</li>
+<li>Site public du réseau de tramway et busway de Casablanca, consulté le 17 novembre 2026.</li>
+<li>Documentation LangGraph.js, sections persistance, interruptions et reprise.</li>
+<li>Loi 09-08 relative à la protection des données personnelles au Maroc.</li>
+<li>Interface de staging Agentic d&#39;ABA, observée le 17 novembre 2026.</li>
+<li>Documentation Next.js 16 et PostgreSQL 18.</li>
+<li>Guide d&#39;information voyageurs Casatramway &amp; Casabusway, relevé du 17 novembre 2026.</li>
+</ol>
+
+<p class="doc-foot">CasaMove · Cahier des charges v1.1 · 20 novembre 2026</p>
+</main>
+</body>
+</html>

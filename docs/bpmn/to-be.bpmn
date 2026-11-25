@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Definitions_ToBe" targetNamespace="http://casamove.ma/bpmn">
+  <bpmn:collaboration id="Collab_ToBe">
+    <bpmn:participant id="Pool_ToBe" name="Service client augmenté (TO-BE)" processRef="Process_ToBe" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_ToBe" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_ToBe">
+    <bpmn:lane id="Lane_T_Usager" name="Usager">
+      <bpmn:flowNodeRef>T_Start</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_Ouvre</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_Lit</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_Resolu</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_Recoit</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_Traite</bpmn:flowNodeRef>
+    </bpmn:lane>
+    <bpmn:lane id="Lane_T_Site" name="Site CasaMove">
+      <bpmn:flowNodeRef>T_Site</bpmn:flowNodeRef>
+    </bpmn:lane>
+    <bpmn:lane id="Lane_T_Sup" name="Superviseur LangGraph">
+      <bpmn:flowNodeRef>T_Class</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_Intent</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_Arbitre</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_Escalade</bpmn:flowNodeRef>
+    </bpmn:lane>
+    <bpmn:lane id="Lane_T_IA" name="Agents IA">
+      <bpmn:flowNodeRef>T_Rag</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_Pert</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_TicketP3</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_TicketCree</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_Qualifie</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_Sla</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_Brouillon</bpmn:flowNodeRef>
+    </bpmn:lane>
+    <bpmn:lane id="Lane_T_Humain" name="Agent humain">
+      <bpmn:flowNodeRef>T_Valide</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_Decision</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>T_Envoie</bpmn:flowNodeRef>
+    </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="T_Start" name="Besoin d'information ou de réclamation" />
+    <bpmn:userTask id="T_Ouvre" name="Ouvre le chat de la page" />
+    <bpmn:serviceTask id="T_Site" name="Affiche le widget et le flux" />
+    <bpmn:serviceTask id="T_Class" name="Classifie l'intention" />
+    <bpmn:exclusiveGateway id="T_Intent" name="Intention ?" />
+    <bpmn:serviceTask id="T_Rag" name="Recherche RAG et cite les sources" />
+    <bpmn:exclusiveGateway id="T_Pert" name="Pertinence suffisante ?" />
+    <bpmn:userTask id="T_Lit" name="Lit la réponse et les sources" />
+    <bpmn:endEvent id="T_Resolu" name="Résolu" />
+    <bpmn:serviceTask id="T_TicketP3" name="Crée un ticket P3" />
+    <bpmn:endEvent id="T_TicketCree" name="Ticket créé" />
+    <bpmn:serviceTask id="T_Qualifie" name="Qualifie et crée le ticket" />
+    <bpmn:serviceTask id="T_Sla" name="Calcule le SLA" />
+    <bpmn:serviceTask id="T_Brouillon" name="Prépare le brouillon" />
+    <bpmn:userTask id="T_Valide" name="Valide, édite ou rejette" />
+    <bpmn:exclusiveGateway id="T_Decision" name="Décision ?" />
+    <bpmn:serviceTask id="T_Envoie" name="Envoie et journalise" />
+    <bpmn:userTask id="T_Recoit" name="Reçoit la réponse et le numéro" />
+    <bpmn:endEvent id="T_Traite" name="Traité" />
+    <bpmn:userTask id="T_Arbitre" name="Arbitre le cas" />
+    <bpmn:endEvent id="T_Escalade" name="Escaladé" />
+    <bpmn:sequenceFlow id="T_f1" sourceRef="T_Start" targetRef="T_Ouvre" />
+    <bpmn:sequenceFlow id="T_f2" sourceRef="T_Ouvre" targetRef="T_Site" />
+    <bpmn:sequenceFlow id="T_f3" sourceRef="T_Site" targetRef="T_Class" />
+    <bpmn:sequenceFlow id="T_f4" sourceRef="T_Class" targetRef="T_Intent" />
+    <bpmn:sequenceFlow id="T_f5" sourceRef="T_Intent" targetRef="T_Rag" name="Information" />
+    <bpmn:sequenceFlow id="T_f6" sourceRef="T_Intent" targetRef="T_Qualifie" name="Réclamation" />
+    <bpmn:sequenceFlow id="T_f7" sourceRef="T_Rag" targetRef="T_Pert" />
+    <bpmn:sequenceFlow id="T_f8" sourceRef="T_Pert" targetRef="T_Lit" name="oui" />
+    <bpmn:sequenceFlow id="T_f9" sourceRef="T_Pert" targetRef="T_TicketP3" name="non" />
+    <bpmn:sequenceFlow id="T_f10" sourceRef="T_TicketP3" targetRef="T_TicketCree" />
+    <bpmn:sequenceFlow id="T_f11" sourceRef="T_Qualifie" targetRef="T_Sla" />
+    <bpmn:sequenceFlow id="T_f12" sourceRef="T_Sla" targetRef="T_Brouillon" />
+    <bpmn:sequenceFlow id="T_f13" sourceRef="T_Brouillon" targetRef="T_Valide" />
+    <bpmn:sequenceFlow id="T_f14" sourceRef="T_Valide" targetRef="T_Decision" />
+    <bpmn:sequenceFlow id="T_f15" sourceRef="T_Decision" targetRef="T_Envoie" name="approuvé" />
+    <bpmn:sequenceFlow id="T_f16" sourceRef="T_Decision" targetRef="T_Arbitre" name="rejeté" />
+    <bpmn:sequenceFlow id="T_f17" sourceRef="T_Arbitre" targetRef="T_Escalade" />
+    <bpmn:sequenceFlow id="T_f18" sourceRef="T_Envoie" targetRef="T_Recoit" />
+    <bpmn:sequenceFlow id="T_f19" sourceRef="T_Recoit" targetRef="T_Traite" />
+    <bpmn:sequenceFlow id="T_f20" sourceRef="T_Lit" targetRef="T_Resolu" />
+    <bpmn:textAnnotation id="T_Ann1">
+      <bpmn:text>Chaque étape écrit le journal d'audit</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="T_Ann1_assoc" sourceRef="T_Ann1" targetRef="T_Class" />
+    <bpmn:textAnnotation id="T_Ann2">
+      <bpmn:text>Aucun envoi sans décision humaine</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="T_Ann2_assoc" sourceRef="T_Ann2" targetRef="T_Valide" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_ToBe">
+    <bpmndi:BPMNPlane id="Plane_ToBe" bpmnElement="Collab_ToBe">
+      <bpmndi:BPMNShape id="Pool_ToBe_di" bpmnElement="Pool_ToBe" isHorizontal="true">
+        <dc:Bounds x="0" y="0" width="2060" height="860" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_T_Usager_di" bpmnElement="Lane_T_Usager" isHorizontal="true">
+        <dc:Bounds x="30" y="0" width="2030" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_T_Site_di" bpmnElement="Lane_T_Site" isHorizontal="true">
+        <dc:Bounds x="30" y="150" width="2030" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_T_Sup_di" bpmnElement="Lane_T_Sup" isHorizontal="true">
+        <dc:Bounds x="30" y="300" width="2030" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_T_IA_di" bpmnElement="Lane_T_IA" isHorizontal="true">
+        <dc:Bounds x="30" y="450" width="2030" height="260" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_T_Humain_di" bpmnElement="Lane_T_Humain" isHorizontal="true">
+        <dc:Bounds x="30" y="710" width="2030" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Start_di" bpmnElement="T_Start">
+        <dc:Bounds x="92" y="57" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Ouvre_di" bpmnElement="T_Ouvre">
+        <dc:Bounds x="215" y="35" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Site_di" bpmnElement="T_Site">
+        <dc:Bounds x="385" y="185" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Class_di" bpmnElement="T_Class">
+        <dc:Bounds x="555" y="335" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Intent_di" bpmnElement="T_Intent">
+        <dc:Bounds x="765" y="350" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Rag_di" bpmnElement="T_Rag">
+        <dc:Bounds x="895" y="480" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Pert_di" bpmnElement="T_Pert">
+        <dc:Bounds x="1105" y="495" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Lit_di" bpmnElement="T_Lit">
+        <dc:Bounds x="1165" y="35" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Resolu_di" bpmnElement="T_Resolu">
+        <dc:Bounds x="1392" y="57" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_TicketP3_di" bpmnElement="T_TicketP3">
+        <dc:Bounds x="1235" y="480" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_TicketCree_di" bpmnElement="T_TicketCree">
+        <dc:Bounds x="1392" y="502" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Qualifie_di" bpmnElement="T_Qualifie">
+        <dc:Bounds x="895" y="610" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Sla_di" bpmnElement="T_Sla">
+        <dc:Bounds x="1065" y="610" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Brouillon_di" bpmnElement="T_Brouillon">
+        <dc:Bounds x="1235" y="610" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Valide_di" bpmnElement="T_Valide">
+        <dc:Bounds x="1235" y="750" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Decision_di" bpmnElement="T_Decision">
+        <dc:Bounds x="1455" y="765" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Envoie_di" bpmnElement="T_Envoie">
+        <dc:Bounds x="1595" y="750" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Recoit_di" bpmnElement="T_Recoit">
+        <dc:Bounds x="1715" y="35" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Traite_di" bpmnElement="T_Traite">
+        <dc:Bounds x="1942" y="57" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Arbitre_di" bpmnElement="T_Arbitre">
+        <dc:Bounds x="1595" y="335" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Escalade_di" bpmnElement="T_Escalade">
+        <dc:Bounds x="1822" y="357" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Ann1_di" bpmnElement="T_Ann1">
+        <dc:Bounds x="520" y="470" width="210" height="46" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Ann2_di" bpmnElement="T_Ann2">
+        <dc:Bounds x="1020" y="760" width="210" height="46" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="T_f1_di" bpmnElement="T_f1">
+        <di:waypoint x="128" y="75" />
+        <di:waypoint x="215" y="75" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f2_di" bpmnElement="T_f2">
+        <di:waypoint x="345" y="75" />
+        <di:waypoint x="385" y="75" />
+        <di:waypoint x="385" y="225" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f3_di" bpmnElement="T_f3">
+        <di:waypoint x="515" y="225" />
+        <di:waypoint x="535" y="225" />
+        <di:waypoint x="535" y="375" />
+        <di:waypoint x="555" y="375" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f4_di" bpmnElement="T_f4">
+        <di:waypoint x="685" y="375" />
+        <di:waypoint x="765" y="375" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f5_di" bpmnElement="T_f5">
+        <di:waypoint x="815" y="375" />
+        <di:waypoint x="850" y="375" />
+        <di:waypoint x="850" y="520" />
+        <di:waypoint x="895" y="520" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="825" y="455" width="82" height="18" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f6_di" bpmnElement="T_f6">
+        <di:waypoint x="790" y="400" />
+        <di:waypoint x="790" y="650" />
+        <di:waypoint x="895" y="650" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="735" y="560" width="82" height="18" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f7_di" bpmnElement="T_f7">
+        <di:waypoint x="1025" y="520" />
+        <di:waypoint x="1105" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f8_di" bpmnElement="T_f8">
+        <di:waypoint x="1130" y="495" />
+        <di:waypoint x="1130" y="75" />
+        <di:waypoint x="1165" y="75" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f9_di" bpmnElement="T_f9">
+        <di:waypoint x="1155" y="520" />
+        <di:waypoint x="1235" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f10_di" bpmnElement="T_f10">
+        <di:waypoint x="1365" y="520" />
+        <di:waypoint x="1392" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f11_di" bpmnElement="T_f11">
+        <di:waypoint x="1025" y="650" />
+        <di:waypoint x="1065" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f12_di" bpmnElement="T_f12">
+        <di:waypoint x="1195" y="650" />
+        <di:waypoint x="1235" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f13_di" bpmnElement="T_f13">
+        <di:waypoint x="1300" y="690" />
+        <di:waypoint x="1300" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f14_di" bpmnElement="T_f14">
+        <di:waypoint x="1365" y="790" />
+        <di:waypoint x="1455" y="790" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f15_di" bpmnElement="T_f15">
+        <di:waypoint x="1505" y="790" />
+        <di:waypoint x="1595" y="790" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f16_di" bpmnElement="T_f16">
+        <di:waypoint x="1480" y="765" />
+        <di:waypoint x="1480" y="375" />
+        <di:waypoint x="1595" y="375" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1470" y="560" width="70" height="18" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f17_di" bpmnElement="T_f17">
+        <di:waypoint x="1725" y="375" />
+        <di:waypoint x="1822" y="375" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f18_di" bpmnElement="T_f18">
+        <di:waypoint x="1725" y="790" />
+        <di:waypoint x="1780" y="790" />
+        <di:waypoint x="1780" y="115" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f19_di" bpmnElement="T_f19">
+        <di:waypoint x="1845" y="75" />
+        <di:waypoint x="1942" y="75" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_f20_di" bpmnElement="T_f20">
+        <di:waypoint x="1295" y="75" />
+        <di:waypoint x="1392" y="75" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_Ann1_assoc_di" bpmnElement="T_Ann1_assoc">
+        <di:waypoint x="625" y="470" />
+        <di:waypoint x="620" y="415" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="T_Ann2_assoc_di" bpmnElement="T_Ann2_assoc">
+        <di:waypoint x="1230" y="783" />
+        <di:waypoint x="1235" y="790" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

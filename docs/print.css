@@ -1,0 +1,348 @@
+/* CasaMove - feuille d'impression A4 partagée par les deux documents */
+
+:root {
+  --ink: #101820;
+  --indigo: #1b2a4a;
+  --indigo-soft: #2f4470;
+  --amber: #f5a524;
+  --sand: #f7f3ec;
+  --line: #d8dee9;
+  --muted: #55607a;
+  --success: #1f6f5c;
+  --danger: #c8452b;
+}
+
+@page {
+  size: A4;
+  margin: 20mm 18mm 22mm 18mm;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: "Segoe UI", "Inter", system-ui, sans-serif;
+  font-size: 10.4pt;
+  line-height: 1.55;
+  background: #e9ecf1;
+}
+
+/* ---------- Couverture ---------- */
+
+.cover {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 18mm 18mm 16mm;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  break-after: page;
+}
+
+.cover__top {
+  border-top: 10mm solid var(--indigo);
+  padding-top: 10mm;
+}
+
+.cover__brand {
+  display: flex;
+  align-items: baseline;
+  gap: 6mm;
+  margin-bottom: 40mm;
+}
+
+.cover__mark {
+  display: inline-block;
+  width: 12mm;
+  height: 12mm;
+  background: var(--amber);
+  border-radius: 3mm;
+}
+
+.cover__name {
+  font-size: 20pt;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--indigo);
+  text-transform: uppercase;
+}
+
+.cover__kicker {
+  font-size: 9pt;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 6mm;
+}
+
+.cover h1 {
+  font-size: 34pt;
+  line-height: 1.08;
+  margin: 0 0 6mm;
+  color: var(--indigo);
+  letter-spacing: -0.01em;
+}
+
+.cover__sub {
+  font-size: 13pt;
+  color: var(--indigo-soft);
+  margin: 0;
+  max-width: 130mm;
+}
+
+.cover__rule {
+  height: 2mm;
+  width: 40mm;
+  background: var(--amber);
+  margin: 10mm 0 0;
+}
+
+.cover__meta {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.4pt;
+}
+
+.cover__meta th {
+  text-align: left;
+  width: 38mm;
+  padding: 2.2mm 0;
+  color: var(--muted);
+  font-weight: 500;
+  border-top: 0.3mm solid var(--line);
+  vertical-align: top;
+}
+
+.cover__meta td {
+  padding: 2.2mm 0;
+  border-top: 0.3mm solid var(--line);
+  font-weight: 600;
+  color: var(--indigo);
+}
+
+.cover__foot {
+  font-size: 8pt;
+  color: var(--muted);
+  border-top: 0.3mm solid var(--line);
+  padding-top: 4mm;
+  margin-top: 8mm;
+}
+
+/* ---------- Corps ---------- */
+
+main {
+  width: 210mm;
+  margin: 0 auto;
+  padding: 20mm 18mm 24mm;
+  background: #ffffff;
+}
+
+h2 {
+  break-before: page;
+  font-size: 18pt;
+  line-height: 1.2;
+  margin: 0 0 7mm;
+  padding-bottom: 3mm;
+  color: var(--indigo);
+  border-bottom: 0.8mm solid var(--amber);
+}
+
+h2:first-of-type {
+  break-before: auto;
+}
+
+h3 {
+  font-size: 12pt;
+  margin: 8mm 0 2.5mm;
+  color: var(--indigo);
+  break-after: avoid;
+}
+
+h4 {
+  font-size: 10.4pt;
+  margin: 5mm 0 1.5mm;
+  color: var(--indigo-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  break-after: avoid;
+}
+
+p {
+  margin: 0 0 3mm;
+  orphans: 2;
+  widows: 2;
+}
+
+ul,
+ol {
+  margin: 0 0 3mm;
+  padding-left: 6mm;
+}
+
+li {
+  margin-bottom: 1.4mm;
+}
+
+strong {
+  color: var(--indigo);
+}
+
+a {
+  color: var(--indigo);
+  text-decoration: none;
+  border-bottom: 0.2mm dotted var(--indigo-soft);
+}
+
+hr {
+  border: 0;
+  border-top: 0.3mm solid var(--line);
+  margin: 6mm 0;
+}
+
+/* ---------- Tableaux ---------- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 4mm 0 6mm;
+  font-size: 8.8pt;
+  line-height: 1.4;
+}
+
+thead {
+  display: table-header-group;
+}
+
+th {
+  background: var(--indigo);
+  color: #ffffff;
+  text-align: left;
+  font-weight: 600;
+  padding: 2.2mm 2.4mm;
+  border: 0.2mm solid var(--indigo);
+}
+
+td {
+  padding: 2mm 2.4mm;
+  border: 0.2mm solid var(--line);
+  vertical-align: top;
+}
+
+tbody tr:nth-child(even) td {
+  background: #f6f8fb;
+}
+
+tr {
+  break-inside: avoid;
+}
+
+/* ---------- Code et citations ---------- */
+
+pre {
+  background: #f5f7fa;
+  border-left: 1mm solid var(--amber);
+  padding: 3.5mm 4mm;
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 8pt;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  break-inside: avoid;
+  margin: 3mm 0 5mm;
+}
+
+code {
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 8.8pt;
+  background: #eef1f6;
+  padding: 0.4mm 1.2mm;
+  border-radius: 1mm;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+blockquote {
+  margin: 4mm 0;
+  padding: 3.5mm 5mm;
+  background: var(--sand);
+  border-left: 1mm solid var(--indigo);
+  color: var(--indigo);
+  break-inside: avoid;
+}
+
+blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- Divers ---------- */
+
+.tag {
+  display: inline-block;
+  font-size: 7.6pt;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.6mm 2mm;
+  border-radius: 1mm;
+  background: #e8edf6;
+  color: var(--indigo);
+}
+
+.tag--must {
+  background: #fde8e3;
+  color: var(--danger);
+}
+
+.tag--ok {
+  background: #e2f2ec;
+  color: var(--success);
+}
+
+.doc-foot {
+  margin-top: 12mm;
+  padding-top: 3mm;
+  border-top: 0.3mm solid var(--line);
+  font-size: 8pt;
+  color: var(--muted);
+}
+
+@media screen {
+  .cover,
+  main {
+    box-shadow: 0 2mm 8mm rgba(16, 24, 32, 0.12);
+  }
+
+  main {
+    padding-bottom: 30mm;
+  }
+}
+
+/* Note de justification : document continu, sans saut de page par section */
+
+.doc--note h2 {
+  break-before: auto;
+  margin-top: 14mm;
+}
+
+.doc--note h2:first-of-type {
+  margin-top: 0;
+}
+
+.doc--note h3 {
+  margin-top: 6mm;
+}
+

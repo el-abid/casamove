@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Soutenance, 5 minutes · CasaMove</title>
+  <link rel="stylesheet" href="print.css" />
+</head>
+<body class="doc--cahier">
+
+<header class="cover">
+  <div class="cover__top">
+    <div class="cover__brand">
+      <span class="cover__mark"></span>
+      <span class="cover__name">CasaMove</span>
+    </div>
+    <p class="cover__kicker">Fiche de démonstration</p>
+    <h1>Soutenance, 5 minutes</h1>
+    <p class="cover__sub">CasaMove, clics exacts et réponses attendues</p>
+    <div class="cover__rule"></div>
+  </div>
+  <div>
+    <table class="cover__meta">
+      <tr><th>Projet</th><td>CasaMove, service client</td></tr>
+      <tr><th>Version</th><td>1.0</td></tr>
+      <tr><th>Date</th><td>21 novembre 2026</td></tr>
+      <tr><th>Durée</th><td>5 minutes, 2 fenêtres</td></tr>
+      <tr><th>Pré-requis</th><td>Postgres démarré, seed chargé, serveur lancé</td></tr>
+    </table>
+    <p class="cover__foot">Document de travail. Toute diffusion hors équipe projet requiert l'accord du responsable de projet.</p>
+  </div>
+</header>
+<main>
+<h2>Avant de commencer, T moins 10 minutes</h2>
+<p>Trois commandes, dans cet ordre, depuis <code>casamove/</code>.</p>
+<pre><code class="language-bash">npm run db:status
+npm run db:seed
+npm run start
+</code></pre>
+<p><code>db:seed</code> remplace les 24 dossiers de démonstration. À lancer une fois le jour de la soutenance, pour que la VoC affiche un volume crédible.</p>
+<p>Lancer ces commandes dans une fenêtre PowerShell dédiée et laisser la fenêtre ouverte. Si le cluster est démarré depuis un terminal d&#39;agent, un redémarrage de session peut l&#39;arrêter. <code>db:status</code> doit répondre « acceptation des connexions » avant d&#39;ouvrir le site.</p>
+<p>Ouvrir <code>/login</code> et se connecter avec le compte administrateur créé par <code>npm run db:admin</code> (mot de passe communiqué hors document). La session dure sept jours, donc la console s&#39;ouvrira sans mot de passe le jour J.</p>
+<p>Les agents appellent le modèle NVIDIA via <code>NVIDIA_API_KEY</code>, présente dans l&#39;environnement. Le retrieval hybride utilise aussi <code>nvidia/nemotron-3.5-embed-1b</code> pour encoder la question. Les 51 vecteurs des fiches sont précalculés dans <code>lib/agent/embeddings.json</code> ; après une modification du corpus, lancer <code>npm run embeddings:build</code>. Pour reclasser l&#39;historique des dossiers après une modification des règles, lancer <code>npm run tickets:reclassify</code>. Sans réseau, le système bascule sur le lexical et les réponses du corpus : la démo reste debout.</p>
+<p>Deux fenêtres côte à côte, pas d&#39;onglets cachés.</p>
+<table>
+<thead>
+<tr>
+<th>Fenêtre</th>
+<th>URL</th>
+<th>Rôle</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Gauche</td>
+<td><code>http://localhost:3000/fr</code></td>
+<td>Site et chat, côté usager</td>
+</tr>
+<tr>
+<td>Droite</td>
+<td><code>http://localhost:3000/admin</code></td>
+<td>Console, session admin ouverte</td>
+</tr>
+</tbody></table>
+<p>Vérifications en 30 secondes : le chat s&#39;ouvre, la console liste les dossiers, l&#39;onglet VoC affiche les dossiers de démonstration.</p>
+<h2>Déroulé, 5 minutes</h2>
+<table>
+<thead>
+<tr>
+<th>Temps</th>
+<th>Action</th>
+<th>Ce que le jury voit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0:00</td>
+<td>Parler, sans clic</td>
+<td>Le problème : WhatsApp, pas de dossier, pas de suivi</td>
+</tr>
+<tr>
+<td>0:30</td>
+<td>Montrer la page, passer en arabe, revenir en français</td>
+<td>Le même service en trois langues, RTL compris</td>
+</tr>
+<tr>
+<td>1:10</td>
+<td>Ouvrir le chat, cliquer « Horaires »</td>
+<td>Réponse sourcée, sans quitter le site</td>
+</tr>
+<tr>
+<td>2:00</td>
+<td>Cliquer « Réclamation », décrire le problème</td>
+<td>Ticket créé avec le texte exact de l&#39;usager</td>
+</tr>
+<tr>
+<td>2:40</td>
+<td>Passer à la console, approuver</td>
+<td>Décision humaine, brouillon validé</td>
+</tr>
+<tr>
+<td>3:20</td>
+<td>Revenir au chat, puis demander le statut du dossier</td>
+<td>Notification de validation et réponse Support</td>
+</tr>
+<tr>
+<td>3:45</td>
+<td>Onglet Voix du client</td>
+<td>Thèmes, priorités, volume, sentiment</td>
+</tr>
+<tr>
+<td>4:20</td>
+<td>Onglet Proactivité, publier une perturbation</td>
+<td>Alerte poussée dans le chat</td>
+</tr>
+<tr>
+<td>4:50</td>
+<td>Conclure</td>
+<td>Cinq agents, archi LangGraph.js et Postgres</td>
+</tr>
+</tbody></table>
+<h2>Étape par étape</h2>
+<h3>1. Le problème, 30 secondes</h3>
+<p>Phrase à dire, sans lire : « Aujourd&#39;hui, l&#39;usager consulte une ligne sur le site, puis doit ouvrir WhatsApp pour poser sa question. Sa réclamation ne reçoit ni numéro, ni échéance, ni suivi. »</p>
+<h3>2. La page, 40 secondes</h3>
+<p>Cliquer sur <code>AR</code> dans la barre du haut. Montrer que la page passe en RTL, y compris le chat. Revenir sur <code>FR</code>.</p>
+<p>Ne pas commenter le design. Le point à faire passer est la continuité de canal.</p>
+<h3>3. Question d&#39;information, 50 secondes</h3>
+<ol>
+<li>Cliquer sur le bouton « Une question ? » en bas à droite.</li>
+<li>Cliquer sur la puce « Horaires ».</li>
+<li>Laisser la réponse s&#39;écrire.</li>
+</ol>
+<p>Réponse attendue : « Le service circule tous les jours de 5h30 à 22h30. Les premiers départs sont à 5h30 des terminus, les derniers à 22h30, sauf sur le busway où les derniers trajets partent à 22h00 vers Omar El Khayam et Oulmes. »</p>
+<p>Source affichée : « Guide voyageurs 2026, relevé du 17/11/2026 ».</p>
+<p>Enchaîner avec « Jusqu&#39;à quand les rames circulent-elles ? ». Le routeur documentaire retrouve la fiche horaires sans mot-clé exact.</p>
+<p>Tester aussi « Où se trouve l&#39;agence la plus proche ? » : le routeur choisit la fiche Agences, pas la fiche Objets perdus.</p>
+<p>Dire : « La réponse est ancrée sur le corpus, pas inventée. Le modèle reformule, et la source reste affichée. Si aucun document ne répond, l&#39;assistant refuse et propose un dossier. »</p>
+<h3>4. Réclamation, 50 secondes</h3>
+<ol>
+<li>Cliquer sur la puce « Réclamation ».</li>
+<li>Le bot demande la description, aucun message n&#39;est envoyé à sa place.</li>
+<li>Taper « Le tram de 7h40 était supprimé sans information » et envoyer.</li>
+<li>Montrer la carte de dossier.</li>
+</ol>
+<p>Réponse attendue : « Votre réclamation est enregistrée sous le numéro CM-2026-000xxx. Priorité P3, réponse attendue avant le … Un agent valide le brouillon avant publication. »</p>
+<p>Dire : « Rien n&#39;est envoyé à ce stade. Le graphe est suspendu sur une interruption, en attente d&#39;un humain. »</p>
+<h3>5. Console, 60 secondes</h3>
+<p>Passer à la fenêtre de droite.</p>
+<ol>
+<li>Montrer les filtres statut, priorité et langue, la recherche et la pagination. Filtrer sur « En attente ».</li>
+<li>Ouvrir le dossier, montrer la fiche usager avec l&#39;abonnement et les dossiers récents.</li>
+<li>Assigner le dossier à l&#39;agent connecté, puis montrer la ligne « Assigné » dans le journal.</li>
+<li>Cliquer sur « Publier la réponse ».</li>
+</ol>
+<p>Montrer le passage à « En cours », la conversation avec le message de l&#39;agent et les pastilles DB, LLM et Emb en haut. Cliquer sur « Ouvrir la conversation » : le chat s&#39;ouvre dans un panneau dédié, séparé de la fiche.</p>
+<p>Côté usager, le chat affiche « Nouveau message de l&#39;agent » avant la réponse. Côté console, un badge et une bannière signalent le message usager.</p>
+<h3>6. Discussion, clôture et CSAT, 60 secondes</h3>
+<ol>
+<li>Dans le panneau de conversation, cliquer sur « Demander confirmation ».</li>
+<li>Revenir au chat : l&#39;usager reçoit la question « Est-ce que je peux vous aider avec autre chose ? ».</li>
+<li>Répondre « non c&#39;est bon merci ».</li>
+<li>Revenir à la console : le message de l&#39;usager apparaît, avec le badge « Nouveau message usager ».</li>
+<li>Cliquer sur « Clôturer le dossier ».</li>
+</ol>
+<p>Le chat affiche « Dossier clôturé avec l&#39;accord de l&#39;usager », puis une carte indépendante avec cinq étoiles. Cliquer sur la quatrième étoile.</p>
+<p>Ouvrir « Mon compte » : le dossier passe à « Clôturé » et la réponse figure dans « Réponses publiées ».</p>
+<p>Dire : « La publication ne clôture plus le dossier. La clôture vient de l&#39;accord de l&#39;usager. La note 1 à 5 est stockée et agrégée dans le VoC. »</p>
+<h3>7. Voix du client, 50 secondes</h3>
+<p>Console, onglet « Voix du client ».</p>
+<ol>
+<li>Montrer le sélecteur 7 jours / 30 jours / Tout et la variation par rapport à la période précédente.</li>
+<li>Montrer les cinq chiffres : dossiers analysés, connotation négative, thème dominant, en attente et satisfaction moyenne sur 5.</li>
+<li>Montrer les barres par thème, par ligne, les priorités, le volume sur sept jours, le sentiment négatif, neutre, positif et la distribution CSAT.</li>
+<li>Cliquer sur « Sécurité » : la file s&#39;ouvre filtrée sur ce thème. Revenir à la VoC.</li>
+<li>Cliquer sur « Ligne 2 » : la file s&#39;ouvre filtrée sur cette ligne. Revenir à la VoC.</li>
+<li>Choisir « propreté » dans les verbatims et montrer les trois citations négatives.</li>
+<li>Cliquer sur « Exporter CSV ».</li>
+</ol>
+<p>Dire : « Le thème, la priorité et le sentiment sont classés à la création par le modèle, avec un repli lexical. La ligne est extraite du message. Le script <code>tickets:reclassify</code> a recalé l&#39;historique et <code>tickets:lines</code> a rattaché les anciens dossiers. Les dossiers 161 et 169, avec insulte, sortent maintenant en sécurité, P2, négatif. »</p>
+<h3>8. Proactivité, 45 secondes</h3>
+<p>Console, onglet « Proactivité ».</p>
+<ol>
+<li>Montrer la carte « Renouvellement d&#39;abonnement » : elle indique « automatique » et la dernière relance.</li>
+<li>Choisir la ligne 2 dans le sélecteur, puis cliquer sur « Publier la perturbation ».</li>
+<li>Revenir au chat, attendre douze secondes.</li>
+<li>Cliquer sur « Masquer » dans l&#39;alerte.</li>
+<li>Revenir à la console : la ligne affiche « 100 % lus, 1 livré, 1 masqué ».</li>
+</ol>
+<p>Le chat affiche « Alerte proactive, Perturbation ligne 2 » avec le texte d&#39;itinéraire de remplacement.</p>
+<p>Montrer aussi le composeur : un titre et un message en FR, AR et EN, une sévérité et une ligne.</p>
+<p>Dire : « L&#39;agent Succès client parle avant qu&#39;on lui demande. La perturbation est limitée à la ligne choisie. Le rappel de renouvellement est automatique : un contrôle au démarrage du serveur, puis toutes les 24 heures, cible les abonnements qui expirent sous sept jours. Le compte étudiant le reçoit, le compte mensuel non. Chaque diffusion est suivie, avec un bouton Masquer. Les perturbations ne sont pas plafonnées ; les relances sont limitées à une par usager et par jour. »</p>
+<h3>9. Conclusion, 10 secondes</h3>
+<p>« Cinq agents, un superviseur, un état durable, une validation humaine et une base unique. Le tout tourne sur Next.js, LangGraph.js et Postgres. »</p>
+<h2>Plan B</h2>
+<table>
+<thead>
+<tr>
+<th>Symptôme</th>
+<th>Geste</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Le chat ne répond pas</td>
+<td><code>npm run db:status</code>, puis <code>npm run db:start</code> si besoin, et renvoyer le message</td>
+</tr>
+<tr>
+<td>Le dossier n&#39;apparaît pas</td>
+<td>Cliquer sur « Rafraîchir » dans la console</td>
+</tr>
+<tr>
+<td>La réponse n&#39;apparaît pas</td>
+<td>Demander le statut du dossier dans le chat, puis vérifier « Réponses publiées » dans Mon compte</td>
+</tr>
+<tr>
+<td>L&#39;alerte ne vient pas</td>
+<td>Attendre douze secondes, puis vérifier la liste des alertes récentes</td>
+</tr>
+<tr>
+<td>Numéro de dossier inattendu</td>
+<td>Ne pas le commenter, dire « un numéro de dossier »</td>
+</tr>
+</tbody></table>
+<p>Ne jamais relancer <code>npm run db:seed</code> pendant la démo : les dossiers seed changent d&#39;identifiants et la file se recharge.</p>
+<h2>Questions probables du jury</h2>
+<ol>
+<li><strong>Pourquoi LangGraph.js et pas la plateforme ABA seule ?</strong> Les exigences F5, F6, F7 et NF5 demandent un état durable, une interruption, une file et un journal. La matrice de décision donne 4,25 pour LangGraph.js contre 2,75 pour la plateforme seule.</li>
+<li><strong>Pourquoi pas Python ?</strong> Python n&#39;est pas installé sur la machine de démonstration, et LangGraph.js offre les mêmes primitives, sans second runtime. Le graphe est le même.</li>
+<li><strong>Comment évitez-vous les hallucinations ?</strong> Les questions d&#39;information passent par un routeur documentaire qui voit les dix-sept fiches et doit citer une phrase exacte du corps pour chaque fiche sélectionnée. La citation est vérifiée comme sous-chaîne du document. Le retrieval hybride lexical et dense sert de secours si le modèle échoue. Sans fiche pertinente, l&#39;assistant refuse et propose un dossier.</li>
+<li><strong>Les données survivent-elles à un redémarrage ?</strong> Oui. Test effectué : ticket créé, serveur arrêté, serveur relancé, approbation reçue, statut mis à jour. Les checkpoints sont dans Postgres.</li>
+<li><strong>Que manque-t-il ?</strong> Le graphe métier, un modèle de sentiment, la limitation de débit, les notifications e-mail ou SMS et le déploiement.</li>
+<li><strong>Comment protégez-vous les comptes ?</strong> Mots de passe hachés avec scrypt, sessions en cookie httpOnly de sept jours, deux rôles. La console et ses API refusent un compte non administrateur.</li>
+<li><strong>Combien d&#39;agents ?</strong> Quatre agents actifs dans le graphe : superviseur, Support, Knowledge, Complaint. Success et VoC tournent hors du graphe, sur les signaux et les tickets. Success cible désormais les abonnements proches de l&#39;échéance.</li>
+<li><strong>Comment le code est-il organisé ?</strong> <code>app/</code> porte les routes, <code>components/</code> l&#39;UI par domaine, <code>lib/</code> la logique métier, <code>tests/</code> la recette. La console est découpée en coquille, indicateurs, file, fiche et modal. Le README et <code>docs/architecture.md</code> décrivent les couches et les règles de dépendance.</li>
+</ol>
+<h2>Après la démonstration</h2>
+<p>Laisser les deux fenêtres ouvertes. Si une question porte sur le code, ouvrir <code>lib/agent/graph.ts</code> et montrer <code>StateGraph</code>, <code>interrupt</code> et <code>PostgresSaver</code>, puis <code>components/admin/</code> pour la séparation entre coquille, file, fiche et conversation, pas l&#39;interface.</p>
+
+<p class="doc-foot">CasaMove · Fiche de démonstration v1.0 · 21 novembre 2026</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,9 @@
+node_modules
+.next
+.pgdata
+out
+build
+package-lock.json
+next-env.d.ts
+docs
+lib/agent/embeddings.json

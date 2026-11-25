@@ -1,0 +1,12 @@
+node_modules
+.next
+.pgdata
+.git
+.gitignore
+docs
+tests
+*.pdf
+*.tsbuildinfo
+.env
+.env.*
+!.env.example

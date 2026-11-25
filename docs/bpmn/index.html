@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>CasaMove, processus AS-IS et TO-BE</title>
+<style>
+  :root { --ink:#101820; --indigo:#1b2a4a; --amber:#f5a524; --line:#dfe5ef; --muted:#5b6579; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#eef1f6; color:var(--ink); font-family:"Segoe UI",system-ui,sans-serif; }
+  .wrap { max-width:1320px; margin:0 auto; padding:40px 28px 64px; }
+  header { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; border-bottom:2px solid var(--indigo); padding-bottom:14px; margin-bottom:28px; }
+  h1 { margin:0; font-size:28px; letter-spacing:-.02em; color:var(--indigo); }
+  h1 span { display:block; margin-top:6px; font-size:14px; font-weight:400; color:var(--muted); letter-spacing:0; }
+  .tag { background:var(--amber); color:#201603; font-weight:800; font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:8px 12px; border-radius:8px; white-space:nowrap; }
+  section { background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:26px; box-shadow:0 14px 34px rgba(16,24,32,.08); }
+  .head { display:flex; align-items:baseline; gap:12px; margin-bottom:12px; }
+  .head b { font-size:17px; color:var(--indigo); }
+  .head span { font-size:12.5px; color:var(--muted); }
+  .head em { margin-left:auto; font-style:normal; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+  img { width:100%; display:block; border:1px solid #edf0f6; border-radius:10px; background:#fff; }
+  ul { margin:12px 0 0; padding-left:18px; font-size:13px; color:#39435c; columns:2; column-gap:30px; }
+  li { margin-bottom:5px; }
+  code { background:#eef1f6; padding:1px 5px; border-radius:4px; font-size:12px; }
+  footer { font-size:12px; color:var(--muted); border-top:1px solid #d8dee9; padding-top:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Processus service client, AS-IS et TO-BE<span>BPMN 2.0, deux pools, cinq constats et six changements</span></h1>
+    <div class="tag">17.11.2026</div>
+  </header>
+
+  <section>
+    <div class="head">
+      <b>AS-IS</b>
+      <span>Trois canaux, aucun dossier, suivi manuel</span>
+      <em>4 couloirs</em>
+    </div>
+    <img src="as-is.png" alt="Processus AS-IS du service client CasaMove" />
+    <ul>
+      <li>Rupture de canal : l'usager revient sur WhatsApp pour suivre.</li>
+      <li>Aucun numéro de dossier, aucune échéance SLA.</li>
+      <li>Le back-office met à jour un tableau, invisible pour l'usager.</li>
+      <li>Trois canaux traités séparément, sans vue unifiée.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="head">
+      <b>TO-BE</b>
+      <span>Chat in-page, superviseur LangGraph, validation humaine</span>
+      <em>5 couloirs</em>
+    </div>
+    <img src="to-be.png" alt="Processus TO-BE du service client CasaMove" />
+    <ul>
+      <li>Le chat remplace la rupture de canal, la réponse est streamée.</li>
+      <li>Le superviseur route vers le RAG ou vers la réclamation.</li>
+      <li>Le ticket porte une priorité et une échéance SLA calculées.</li>
+      <li>Aucun envoi sans décision humaine, chaque étape est journalisée.</li>
+      <li>Le rejet part en arbitrage superviseur, pas dans le vide.</li>
+      <li>L'usager reçoit le numéro et suit son dossier sur le site.</li>
+    </ul>
+  </section>
+
+  <footer>
+    Fichiers éditables : <code>as-is.bpmn</code> et <code>to-be.bpmn</code>, à ouvrir dans bpmn.io ou Camunda Modeler.
+    Rendu par bpmn-js 18.33. Marque fictive CasaMove, aucun asset repris du réseau existant.
+  </footer>
+</div>
+</body>
+</html>

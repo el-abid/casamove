@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LangGraph ou plateforme ABA · CasaMove</title>
+  <link rel="stylesheet" href="print.css" />
+</head>
+<body class="doc--note">
+
+<header class="cover">
+  <div class="cover__top">
+    <div class="cover__brand">
+      <span class="cover__mark"></span>
+      <span class="cover__name">CasaMove</span>
+    </div>
+    <p class="cover__kicker">Note d'architecture et de décision</p>
+    <h1>LangGraph ou plateforme ABA</h1>
+    <p class="cover__sub">Pourquoi l'orchestration doit rester dans LangGraph</p>
+    <div class="cover__rule"></div>
+  </div>
+  <div>
+    <table class="cover__meta">
+      <tr><th>Projet</th><td>CasaMove, service client</td></tr>
+      <tr><th>Version</th><td>1.1</td></tr>
+      <tr><th>Date</th><td>20 novembre 2026</td></tr>
+      <tr><th>Objet</th><td>Arbitrage entre LangGraph et la plateforme Agentic d'ABA</td></tr>
+      <tr><th>Décision</th><td>LangGraph pour le cœur, plateforme en composant</td></tr>
+    </table>
+    <p class="cover__foot">Document de travail. Toute diffusion hors équipe projet requiert l'accord du responsable de projet.</p>
+  </div>
+</header>
+<main>
+<h2>Verdict</h2>
+<p><strong>La plateforme Agentic d&#39;ABA ne peut pas porter seule les exigences du cahier des charges. LangGraph.js doit tenir l&#39;orchestration, l&#39;état des dossiers et la validation humaine. La plateforme garde trois rôles utiles : itération des prompts, flow de connaissance, instance de démonstration.</strong></p>
+<p>Ce verdict ne repose pas sur une préférence technique. Il découle de quatre exigences structurantes du cahier, F5, F6, F7 et NF5, qu&#39;aucun builder visuel ne couvre nativement aujourd&#39;hui.</p>
+<h2>1. Objet de la note</h2>
+<p>Le cahier des charges fixe huit exigences fonctionnelles et six exigences non fonctionnelles pour la V1 du service client CasaMove. Deux options d&#39;implémentation ont été envisagées : tout construire sur la plateforme Agentic d&#39;ABA, ou tout construire en code avec LangGraph, version Python puis portage JavaScript. Ce document compare les deux, tranche, et précise les conditions dans lesquelles l&#39;arbitrage devrait être revu.</p>
+<h2>2. Ce que la plateforme ABA apporte réellement</h2>
+<p>L&#39;interface de staging observée le 17 novembre 2026 est un builder visuel de flows. Elle expose des projets, des workflows, des outils, un store de templates, des serveurs MCP, des clés d&#39;API et des variables globales. Un flow peut être appelé comme outil par un agent, et exposé comme API.</p>
+<p>Ses forces sont réelles et mesurables.</p>
+<ol>
+<li><strong>Vitesse de prototypage.</strong> Un flow de connaissance se monte en quelques heures, sans écrire de code d&#39;infrastructure.</li>
+<li><strong>Lecture métier.</strong> Un responsable qualité comprend un canvas plus vite qu&#39;un fichier Python.</li>
+<li><strong>Itération de prompt.</strong> Le test dans le canvas raccourcit la boucle de réglage.</li>
+<li><strong>Composants prêts.</strong> Retrieval, modèles, connecteurs et outils sont fournis.</li>
+<li><strong>Démonstration.</strong> L&#39;instance de staging sert de vitrine sans travail de déploiement.</li>
+</ol>
+<p>L&#39;interface présente les marqueurs d&#39;un builder dérivé de Langflow : routes <code>/flows</code>, <code>/projects</code>, <code>/store</code>, <code>/settings/mcp-servers</code>, mode tool, expositions MCP. La conclusion pratique est simple : les primitives et les limites de Langflow s&#39;appliquent, sous réserve de confirmation par l&#39;éditeur. Un builder visuel orchestre des appels. Il ne fournit pas, par défaut, un moteur d&#39;état durable avec reprise, ni une horloge métier.</p>
+<h2>3. Les quatre exigences qui disqualifient la plateforme seule</h2>
+<table>
+<thead>
+<tr>
+<th>Exigence</th>
+<th>Ce qu&#39;il faut</th>
+<th>Ce qu&#39;offre la plateforme</th>
+<th>Écart</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>F5, validation humaine</td>
+<td>Suspendre un dossier, attendre des heures, reprendre au même nœud</td>
+<td>Aucune interruption durable native</td>
+<td>Le HITL devient un contournement applicatif</td>
+</tr>
+<tr>
+<td>F4 et NF5, SLA et audit</td>
+<td>Échéances, relances, journal en ajout seul, rejeu</td>
+<td>Pas d&#39;ordonnanceur, journal limité</td>
+<td>Deux services externes à écrire</td>
+</tr>
+<tr>
+<td>F6, proactivité</td>
+<td>Déclencher une alerte sans message entrant</td>
+<td>Pas de planification</td>
+<td>Un cron et une file à ajouter</td>
+</tr>
+<tr>
+<td>F7, console agents</td>
+<td>File triée par échéance, décision signée</td>
+<td>Pas d&#39;écran métier</td>
+<td>Console à développer entièrement</td>
+</tr>
+</tbody></table>
+<p>Une nuance importante : la plateforme peut appeler une API qui fait ces choses. Mais alors le cœur du système vit ailleurs, et la plateforme devient un habillage. Autant l&#39;assumer et mettre le cœur dans un endroit testable.</p>
+<h2>4. Comparaison critère par critère</h2>
+<table>
+<thead>
+<tr>
+<th>Critère</th>
+<th>LangGraph.js</th>
+<th>Plateforme ABA seule</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>État partagé entre agents</td>
+<td>Typé, versionné, checkpointé</td>
+<td>Passage de messages, pas d&#39;état métier</td>
+</tr>
+<tr>
+<td>Suspension et reprise</td>
+<td><code>interrupt()</code> et <code>Command(resume=...)</code></td>
+<td>Contournement par API</td>
+</tr>
+<tr>
+<td>Délais et relances</td>
+<td>Minuteries en processus, testables et mesurables</td>
+<td>Aucun ordonnanceur</td>
+</tr>
+<tr>
+<td>Journal et rejeu</td>
+<td>Trace par nœud, rejeu en lecture</td>
+<td>Journal d&#39;exécution limité</td>
+</tr>
+<tr>
+<td>Tests automatisés</td>
+<td>Tests Node sur le graphe et les nœuds</td>
+<td>Tests de flow, peu outillés</td>
+</tr>
+<tr>
+<td>Versionnement</td>
+<td>Git, revue de code</td>
+<td>Export JSON, revue difficile</td>
+</tr>
+<tr>
+<td>Dépendance éditeur</td>
+<td>Aucune, open source</td>
+<td>Staging non public</td>
+</tr>
+<tr>
+<td>Licence</td>
+<td>MIT pour LangGraph.js</td>
+<td>Non documentée pour le fork</td>
+</tr>
+<tr>
+<td>UI et démo</td>
+<td>À construire</td>
+<td>Prête</td>
+</tr>
+<tr>
+<td>Compétence requise</td>
+<td>TypeScript, asynchrone</td>
+<td>Configuration visuelle</td>
+</tr>
+</tbody></table>
+<h2>5. Matrice de décision pondérée</h2>
+<p>Notation de 1 à 5, pondération sur 100. Les poids traduisent le cahier des charges, pas une opinion : la couverture des exigences Must pèse le plus lourd.</p>
+<table>
+<thead>
+<tr>
+<th>Critère</th>
+<th>Poids</th>
+<th>LangGraph.js</th>
+<th>Plateforme</th>
+<th>Hybride</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Couverture des Must</td>
+<td>30</td>
+<td>5</td>
+<td>3</td>
+<td>5</td>
+</tr>
+<tr>
+<td>État durable et HITL</td>
+<td>20</td>
+<td>5</td>
+<td>1</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Audit et tests</td>
+<td>15</td>
+<td>5</td>
+<td>2</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Délai de mise en œuvre</td>
+<td>15</td>
+<td>2</td>
+<td>5</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Indépendance, lock-in</td>
+<td>10</td>
+<td>5</td>
+<td>1</td>
+<td>3</td>
+</tr>
+<tr>
+<td>UX et démonstration</td>
+<td>10</td>
+<td>2</td>
+<td>5</td>
+<td>5</td>
+</tr>
+<tr>
+<td><strong>Score pondéré</strong></td>
+<td><strong>100</strong></td>
+<td><strong>4,25</strong></td>
+<td><strong>2,75</strong></td>
+<td><strong>4,50</strong></td>
+</tr>
+</tbody></table>
+<p>Test de sensibilité : si le délai devient le critère dominant, avec un poids de 30, la plateforme monte à 3,15, LangGraph.js à 3,80 et l&#39;hybride à 4,20. Le classement ne change pas.</p>
+<p>Lecture : l&#39;hybride gagne parce qu&#39;il combine le moteur d&#39;état avec les composants visuels. LangGraph.js seul perd sur le délai et la démo. La plateforme seule perd sur tout ce qui produit de la valeur métier durable.</p>
+<p>Écart constaté après mise en œuvre : le portage JavaScript a supprimé l&#39;installation Python et le second processus. Le moteur a été livré en deux jours, pas en trois semaines. Le tableau ci-dessus reste l&#39;estimation faite avant le choix de LangGraph.js.</p>
+<h2>6. Coût et délai</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Délai V1</th>
+<th>Travail caché</th>
+<th>Dette</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Plateforme seule</td>
+<td>2 semaines</td>
+<td>4 contournements, environ 5 jours</td>
+<td>Élevée, non testable</td>
+</tr>
+<tr>
+<td>LangGraph seul</td>
+<td>3 semaines</td>
+<td>Aucun</td>
+<td>Faible</td>
+</tr>
+<tr>
+<td>Hybride</td>
+<td>3 semaines et 2 jours</td>
+<td>Intégration du flow ABA</td>
+<td>Faible</td>
+</tr>
+</tbody></table>
+<p>Le différentiel de deux semaines entre la plateforme seule et LangGraph est réel. Il disparaît dès qu&#39;on compte le HITL, la file SLA et le journal, qui doivent être écrits dans les deux cas. La plateforme ne fait gagner que sur l&#39;écran de chat et le retrieval, soit environ trois jours.</p>
+<h2>7. Risques de LangGraph seul, et parades</h2>
+<ol>
+<li><strong>Compétence.</strong> TypeScript asynchrone, streaming, graphes. Parade : périmètre réduit, deux agents au jalon 3, pas de fonctionnalité hors cahier.</li>
+<li><strong>Délai.</strong> L&#39;estimation initiale était de trois semaines. Le portage JavaScript et le périmètre réduit ont ramené le moteur à deux jours. Parade : la page d&#39;accueil reste statique, la console est minimale à J6.</li>
+<li><strong>Pas d&#39;UI.</strong> Parade : Next.js et quatre composants suffisent, le design n&#39;est pas le sujet.</li>
+<li><strong>Exploitation.</strong> Parade : un seul processus Next.js, Postgres local, scripts <code>db:start</code> et <code>db:stop</code>.</li>
+<li><strong>Coût des appels.</strong> Parade : réponses courtes, deux appels par message, repli déterministe si le modèle échoue.</li>
+</ol>
+<h2>8. Risques de la plateforme seule, et parades</h2>
+<ol>
+<li><strong>Continuité.</strong> Le staging n&#39;est pas un service public. Parade : export des flows, corpus versionné, prompts dans le dépôt.</li>
+<li><strong>Licence.</strong> Le fork ABA n&#39;a pas de licence publique documentée. Parade : demander une confirmation écrite avant tout usage en production.</li>
+<li><strong>Verrouillage.</strong> Un flow exporté en JSON reste lisible, mais l&#39;exécution dépend de la plateforme. Parade : ne jamais y mettre l&#39;état des dossiers.</li>
+<li><strong>Débogage.</strong> Un canvas de vingt nœuds devient difficile à relire et à tester. Parade : limiter la plateforme aux flows de connaissance et de démonstration.</li>
+<li><strong>Conformité.</strong> Les données de staging ne sont pas couvertes par un accord de traitement. Parade : aucune donnée personnelle réelle.</li>
+</ol>
+<h2>9. Décision recommandée</h2>
+<p>L&#39;architecture retenue est l&#39;hybride, avec une frontière nette.</p>
+<table>
+<thead>
+<tr>
+<th>Couche</th>
+<th>Responsable</th>
+<th>Contenu</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Orchestration</td>
+<td>LangGraph.js</td>
+<td>Superviseur, état, routage, HITL, reprise</td>
+</tr>
+<tr>
+<td>Connaissance</td>
+<td>Corpus local en V1, plateforme ABA en V2</td>
+<td>Routeur documentaire, retrieval hybride de secours</td>
+</tr>
+<tr>
+<td>Expérience</td>
+<td>Next.js 16</td>
+<td>Page publique, chat, console agents</td>
+</tr>
+<tr>
+<td>Données</td>
+<td>Postgres 18</td>
+<td>Tickets, checkpoints</td>
+</tr>
+</tbody></table>
+<p>Trois règles gouvernent cette frontière.</p>
+<ol>
+<li>Aucun état de dossier dans la plateforme. Si le staging s&#39;arrête, la démo continue en local.</li>
+<li>Tout prompt validé est recopié dans le dépôt, avec sa version.</li>
+<li>La plateforme est appelée comme un outil, jamais comme le point d&#39;entrée unique.</li>
+</ol>
+<p>En V1, la plateforme n&#39;est pas branchée. Le corpus local assure la démonstration, et le flow ABA reste une cible V2.</p>
+<h2>10. Critères de bascule</h2>
+<p>L&#39;arbitrage change dans trois cas, à documenter explicitement.</p>
+<ol>
+<li><strong>Deadline sous trois semaines et livrable de démonstration uniquement.</strong> La plateforme seule devient rationnelle. Il faut alors accepter quatre écarts au cahier et les écrire dans la recette.</li>
+<li><strong>Obligation contractuelle d&#39;utiliser ABA.</strong> On inverse l&#39;hybride : la plateforme devient l&#39;entrée, LangGraph devient un service appelé pour l&#39;état et le HITL.</li>
+<li><strong>Absence de compétence TypeScript ou Node dans l&#39;équipe.</strong> La plateforme reste le seul chemin, avec une dette assumée et un périmètre réduit aux agents Support et Knowledge.</li>
+</ol>
+<p>Aucun de ces trois cas ne correspond au contexte actuel : dix jours ouvrés, un développeur Node, et une recette qui exige le HITL.</p>
+<h2>11. Limites de cette note</h2>
+<p>La comparaison s&#39;appuie sur l&#39;interface de staging et sur la documentation publique, pas sur le code du fork ni sur un test de charge. Un test de HITL a été réalisé sur LangGraph.js : interruption, redémarrage complet du serveur, reprise sur <code>Command</code>, statut mis à jour. La vérification restante concerne la plateforme ABA : licence, politique de données et comportement d&#39;une attente longue.</p>
+<h2>12. Mise en œuvre réelle</h2>
+<table>
+<thead>
+<tr>
+<th>Élément</th>
+<th>Choix livré</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Front et API</td>
+<td>Next.js 16, route handlers Node</td>
+</tr>
+<tr>
+<td>Orchestration</td>
+<td>LangGraph.js 1.7, <code>StateGraph</code>, <code>interrupt</code>, <code>Command</code></td>
+</tr>
+<tr>
+<td>Persistance</td>
+<td>PostgreSQL 18, <code>PostgresSaver</code></td>
+</tr>
+<tr>
+<td>Connaissance</td>
+<td>17 fiches multilingues, routeur documentaire et retrieval hybride de secours</td>
+</tr>
+<tr>
+<td>Console</td>
+<td>Next.js, file SLA, approbation et rejet</td>
+</tr>
+<tr>
+<td>Support</td>
+<td>Outils dossier, mes dossiers, perturbation de ligne</td>
+</tr>
+<tr>
+<td>Conversation</td>
+<td>LLM, prompt identité et capacités</td>
+</tr>
+<tr>
+<td>Comptes</td>
+<td>scrypt, sessions httpOnly, RBAC admin ou user</td>
+</tr>
+<tr>
+<td>Modèle externe</td>
+<td>NVIDIA NIM, <code>nemotron-3.5-bolt-e4b</code>, repli déterministe</td>
+</tr>
+<tr>
+<td>Embeddings</td>
+<td><code>nemotron-3.5-embed-1b</code>, 1024 dimensions, 51 vecteurs précalculés</td>
+</tr>
+</tbody></table>
+<p>Test de reprise effectué le 20 novembre : ticket créé, serveur arrêté, serveur relancé, approbation reçue, statut mis à jour. Les checkpoints ont survécu au redémarrage.</p>
+<p>Écarts assumés : VoC sans segmentation par station, graphe métier non livré, pas de limitation de débit, notifications limitées à la publication dans le dossier, ordonnanceur limité aux relances d&#39;abonnement en processus. Les décisions sont journalisées, les relances d&#39;abonnement ciblées et automatiques, le routeur documentaire, le retrieval hybride et la classification stockée sont livrés. Le VoC couvre période, comparaison, export, drill-down thème et ligne, verbatims et CSAT. La proactivité couvre ligne, composeur trilingue, relance automatique, diffusion suivie et masquage. Le cycle de réclamation couvre discussion, clôture confirmée et feedback.</p>
+<h2>Annexe, méthode et sources</h2>
+<p>La notation pondérée suit une grille de 1 à 5, appliquée aux mêmes critères pour les trois options. Les poids sont fixés avant notation, puis un test de sensibilité vérifie que le classement résiste à un changement de priorité.</p>
+<ol>
+<li>Cahier des charges CasaMove v1.1, 20 novembre 2026.</li>
+<li>Documentation LangGraph.js, persistance, interruptions, reprise et streaming.</li>
+<li>Interface de staging Agentic d&#39;ABA, observée le 17 novembre 2026.</li>
+<li>Documentation publique de Langflow, composants, mode tool et expositions MCP.</li>
+<li>Loi 09-08 relative à la protection des données personnelles au Maroc.</li>
+<li>Documentation Next.js 16 et PostgreSQL 18.</li>
+<li>Guide d&#39;information voyageurs Casatramway &amp; Casabusway, relevé du 17 novembre 2026.</li>
+</ol>
+
+<p class="doc-foot">CasaMove · Note de justification v1.1 · 20 novembre 2026</p>
+</main>
+</body>
+</html>

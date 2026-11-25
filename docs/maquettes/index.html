@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>CasaMove, maquettes v1</title>
+<style>
+  :root { --ink:#101820; --indigo:#1b2a4a; --amber:#f5a524; --line:#e3e7ee; --muted:#5b6579; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#eef1f6; color:var(--ink); font-family:"Segoe UI",system-ui,sans-serif; }
+  .wrap { max-width:1180px; margin:0 auto; padding:44px 28px 70px; }
+  header { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; border-bottom:2px solid var(--indigo); padding-bottom:16px; margin-bottom:30px; }
+  h1 { margin:0; font-size:30px; letter-spacing:-0.02em; color:var(--indigo); }
+  h1 span { color:var(--muted); font-weight:400; font-size:15px; display:block; margin-top:6px; letter-spacing:0; }
+  .badge { background:var(--amber); color:#201603; font-weight:800; font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:8px 12px; border-radius:8px; }
+  figure { margin:0 0 34px; }
+  figure img { width:100%; display:block; border-radius:14px; border:1px solid var(--line); box-shadow:0 18px 40px rgba(16,24,32,.14); }
+  figcaption { display:flex; align-items:baseline; gap:10px; margin-top:10px; font-size:13px; color:var(--muted); }
+  figcaption b { color:var(--indigo); font-size:14px; }
+  .mobile { max-width:520px; margin:0 auto 34px; }
+  .mobile img { width:100%; border-radius:16px; }
+  footer { border-top:1px solid #d8dee9; padding-top:14px; font-size:12px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>CasaMove, maquettes v1<span>Service client augmenté, trois écrans de référence</span></h1>
+    <div class="badge">17.11.2026</div>
+  </header>
+
+  <figure>
+    <img src="01-accueil-chat.png" alt="Page d'accueil CasaMove avec assistant ouvert" />
+    <figcaption><b>01 · Accueil</b> Widget intégré, réponse sourcée, alerte de perturbation, trois langues.</figcaption>
+  </figure>
+
+  <figure>
+    <img src="02-console-agents.png" alt="Console agents avec file SLA et décision" />
+    <figcaption><b>02 · Console agents</b> File SLA, dossier, brouillon, décision humaine tracée.</figcaption>
+  </figure>
+
+  <figure class="mobile">
+    <img src="03-mobile-arabe.png" alt="Assistant mobile en arabe, rendu RTL" />
+    <figcaption><b>03 · Mobile arabe</b> Rendu RTL natif, alerte proactive, ticket et suivi.</figcaption>
+  </figure>
+
+  <footer>CasaMove, maquettes HTML rendues en PNG. Marque fictive, aucun asset repris du réseau existant.</footer>
+</div>
+</body>
+</html>

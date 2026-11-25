@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>CasaMove, console agents</title>
+<link rel="stylesheet" href="mock.css" />
+</head>
+<body class="page-console">
+
+<aside class="rail">
+  <div class="rail__mark">CM</div>
+  <div class="rail__nav">
+    <div class="rail__item is-active" title="File d'attente">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+    </div>
+    <div class="rail__item" title="Tickets">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z"/><path d="M13 6v12"/></svg>
+    </div>
+    <div class="rail__item" title="Voix du client">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+    </div>
+    <div class="rail__item" title="Corpus">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5a2 2 0 0 1 2-2h13v18H6a2 2 0 0 1-2-2Z"/><path d="M8 7h7M8 11h7"/></svg>
+    </div>
+  </div>
+  <div class="rail__bottom">
+    <div class="rail__avatar">SA</div>
+    <div>Superviseur</div>
+  </div>
+</aside>
+
+<div class="console">
+  <header class="topbar">
+    <div>
+      <h2>Console agents</h2>
+      <div class="crumb">Service client · mardi 17 novembre 2026</div>
+    </div>
+    <div class="topbar__right">
+      <span class="pill">FR · AR · EN</span>
+      <span class="pill pill--alarm">2 dépassements SLA</span>
+      <span class="avatar-s">SA</span>
+    </div>
+  </header>
+
+  <section class="kpis">
+    <div class="kpi">
+      <div><label>Tickets ouverts</label><b>18</b> <small>+3 aujourd'hui</small></div>
+      <svg class="spark" viewBox="0 0 82 30" fill="none"><path d="M1 24 L12 20 L23 22 L34 15 L45 17 L56 10 L67 12 L81 5" stroke="#1F6F5C" stroke-width="2" stroke-linecap="round"/></svg>
+    </div>
+    <div class="kpi">
+      <div><label>SLA à risque</label><b>2</b> <small style="color:#C8452B">échéance &lt; 2 h</small></div>
+      <svg class="spark" viewBox="0 0 82 30" fill="none"><path d="M1 8 L14 12 L27 9 L40 18 L53 15 L66 24 L81 21" stroke="#C8452B" stroke-width="2" stroke-linecap="round"/></svg>
+    </div>
+    <div class="kpi">
+      <div><label>Temps de traitement</label><b>3 h 12</b> <small>−18 min</small></div>
+      <svg class="spark" viewBox="0 0 82 30" fill="none"><path d="M1 6 L14 9 L27 14 L40 12 L53 18 L66 20 L81 24" stroke="#1B2A4A" stroke-width="2" stroke-linecap="round"/></svg>
+    </div>
+    <div class="kpi">
+      <div><label>Satisfaction</label><b>86 %</b> <small>+4 pts</small></div>
+      <svg class="spark" viewBox="0 0 82 30" fill="none"><path d="M1 22 L14 19 L27 20 L40 13 L53 15 L66 8 L81 6" stroke="#F5A524" stroke-width="2" stroke-linecap="round"/></svg>
+    </div>
+  </section>
+
+  <div class="workspace">
+    <section class="panel queue">
+      <header class="panel__head"><b>File d'attente</b><span>18 tickets</span></header>
+
+      <div class="qitem is-active">
+        <div class="qitem__top"><span class="qid">CM-2026-000148</span><span class="badge badge--p1">P1</span><span class="qitem__time">1 h 42</span></div>
+        <b>Retards répétés, ligne 1</b>
+        <div class="qitem__meta"><span>Y. Berrada</span><span>·</span><span>WhatsApp</span><span>·</span><span>Ponctualité</span></div>
+      </div>
+
+      <div class="qitem">
+        <div class="qitem__top"><span class="qid">CM-2026-000147</span><span class="badge badge--p2">P2</span><span class="qitem__time is-ok">6 h 05</span></div>
+        <b>Abonnement non renouvelé</b>
+        <div class="qitem__meta"><span>M. Idrissi</span><span>·</span><span>Web</span><span>·</span><span>Abonnement</span></div>
+      </div>
+
+      <div class="qitem">
+        <div class="qitem__top"><span class="qid">CM-2026-000145</span><span class="badge badge--p3">P3</span><span class="qitem__time is-ok">21 h</span></div>
+        <b>Propreté d'une rame</b>
+        <div class="qitem__meta"><span>S. Alaoui</span><span>·</span><span>Chat</span><span>·</span><span>Propreté</span></div>
+      </div>
+
+      <div class="qitem">
+        <div class="qitem__top"><span class="qid">CM-2026-000144</span><span class="badge badge--p3">P3</span><span class="qitem__time is-ok">38 h</span></div>
+        <b>Horaire du dernier busway</b>
+        <div class="qitem__meta"><span>N. Chraibi</span><span>·</span><span>Chat</span><span>·</span><span>Information</span></div>
+      </div>
+
+      <div class="qitem">
+        <div class="qitem__top"><span class="qid">CM-2026-000142</span><span class="badge badge--p2">P2</span><span class="qitem__time is-ok">9 h 12</span></div>
+        <b>Demande de remboursement</b>
+        <div class="qitem__meta"><span>H. Tazi</span><span>·</span><span>Web</span><span>·</span><span>Remboursement</span></div>
+      </div>
+    </section>
+
+    <section class="panel ticket">
+      <header class="ticket__head">
+        <div>
+          <h3>Réclamation CM-2026-000148</h3>
+          <div class="sub">Retard récurrent · ligne 1 · reçue sur WhatsApp</div>
+        </div>
+        <span class="status">En attente de validation</span>
+      </header>
+
+      <div class="meta">
+        <div>Usager<b>Youssef Berrada</b></div>
+        <div>Ligne<b>T1 · Ain Diab</b></div>
+        <div>Créée<b>17/11 à 09 h 14</b></div>
+        <div>SLA<b style="color:#C8452B">17/11 à 13 h 30</b></div>
+      </div>
+
+      <div class="thread">
+        <div class="tl"><i></i><div>Message reçu, pièce jointe : photo de l'affichage quai<span>09 h 14</span></div></div>
+        <div class="tl"><i></i><div>Qualification automatique, thème ponctualité, priorité P1<span>09 h 14</span></div></div>
+        <div class="tl"><i style="background:#C8452B"></i><div>Risque élevé détecté, 3 signalements similaires cette semaine<span>09 h 15</span></div></div>
+        <div class="tl"><i style="background:#8A93A6"></i><div>Brouillon généré, en attente de décision humaine<span>09 h 15</span></div></div>
+
+        <div class="quote">« Chaque matin cette semaine, le tram de 7 h 40 est supprimé sans information sur le quai. »<span>Message d'origine · 17/11, 09 h 14</span></div>
+
+        <div class="ctx">
+          <div><span>Signalements similaires</span><b>3 cette semaine</b></div>
+          <div><span>Ligne concernée</span><b>T1 · 7 h 40</b></div>
+          <div><span>Abonnement</span><b>Actif</b></div>
+        </div>
+      </div>
+
+      <div class="draft">
+        <div class="draft__head"><span>Brouillon proposé par l'agent Réclamation</span><b>3 sources</b></div>
+        <div class="draft__body">
+          Bonjour Youssef,<br><br>
+          Nous avons bien reçu votre signalement concernant les retards répétés sur la ligne 1. Une vérification est en cours sur les départs de 7 h 40 et 8 h 05, et nos équipes d'exploitation ont été saisies.<br><br>
+          Nous revenons vers vous avant 13 h 30 aujourd'hui avec un engagement de suivi. Votre dossier reste ouvert sous la référence CM-2026-000148.
+        </div>
+        <div class="draft__tools"><span>Ton : empathique</span><span>·</span><span>Langue : français</span><span>·</span><span>Score de confiance 0,91</span></div>
+      </div>
+    </section>
+
+    <aside class="panel decision">
+      <div class="risk"><b>Risque élevé</b>Insatisfaction répétée, demande implicite de geste commercial.</div>
+
+      <div>
+        <div class="sec">Sources utilisées</div>
+        <div class="srclist">
+          <div>Procédure réclamations v3</div>
+          <div>Horaires hiver 2026</div>
+          <div>Grille gestes commerciaux</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec">Décision</div>
+        <div class="actions">
+          <button class="primary">Approuver et envoyer</button>
+          <button>Éditer le brouillon</button>
+          <button class="warn">Rejeter et escalader</button>
+        </div>
+      </div>
+
+      <div class="comment">Commentaire interne, obligatoire en cas de rejet…</div>
+
+      <div class="note">Toute décision est horodatée, signée et journalisée. L'usager reçoit le numéro de dossier et suit son statut depuis le site.</div>
+    </aside>
+  </div>
+</div>
+
+</body>
+</html>

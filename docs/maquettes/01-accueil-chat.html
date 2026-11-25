@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>CasaMove, accueil avec assistant</title>
+<link rel="stylesheet" href="mock.css" />
+</head>
+<body class="page-home">
+
+<div class="utility">
+  <div class="utility__left">
+    <span>Réseau tram et busway de Casablanca</span>
+    <span class="utility__phone">Service client 05 22 99 83 83</span>
+    <span>Lun au sam, 8 h à 20 h</span>
+  </div>
+  <div class="utility__lang"><b>FR</b><span>AR</span><span>EN</span></div>
+</div>
+
+<header class="site-header">
+  <div class="brand"><span class="brand__mark"></span>CasaMove</div>
+  <nav class="nav">
+    <span class="is-active">Se déplacer</span>
+    <span>Lignes et horaires</span>
+    <span>Tarifs et abonnements</span>
+    <span>Actualités</span>
+    <span>Contact</span>
+  </nav>
+  <div class="header__actions">
+    <div class="search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      Rechercher une station
+    </div>
+    <button class="btn">Rechargez</button>
+  </div>
+</header>
+
+<main class="hero">
+  <div>
+    <span class="kicker">Le réseau en un clin d'œil</span>
+    <h1>Se déplacer à Casablanca n'a jamais été aussi simple.</h1>
+    <p class="hero__sub">Horaires, itinéraires, abonnements et réclamations. L'assistant CasaMove répond sur cette page, en français, en arabe et en anglais.</p>
+    <div class="searchcard">
+      <div class="field"><label>Départ</label><b>Casa Port</b></div>
+      <div class="field"><label>Arrivée</label><b>Sidi Mohamed Ben Abdellah</b></div>
+      <button class="btn">Rechercher</button>
+    </div>
+  </div>
+  <div class="hero__map">
+    <span class="mapchip">Carte du réseau</span>
+    <svg viewBox="0 0 520 340" fill="none">
+      <path d="M 10 268 L 130 224 L 248 236 L 366 158 L 512 128" stroke="#F5A524" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 30 78 L 168 118 L 300 84 L 424 140 L 508 236" stroke="#7FD1C0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 74 314 L 188 262 L 292 284 L 392 238 L 486 258" stroke="#F27D5E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <g fill="#fff">
+        <circle cx="130" cy="224" r="5"/><circle cx="248" cy="236" r="5"/><circle cx="366" cy="158" r="5"/>
+        <circle cx="168" cy="118" r="5"/><circle cx="300" cy="84" r="5"/><circle cx="424" cy="140" r="5"/>
+        <circle cx="188" cy="262" r="5"/><circle cx="292" cy="284" r="5"/><circle cx="392" cy="238" r="5"/>
+      </g>
+      <g fill="#F5A524"><circle cx="130" cy="224" r="10" fill-opacity=".18"/></g>
+      <g stroke="#F5A524" stroke-width="2"><circle cx="366" cy="158" r="9" fill="#1b2a4a"/></g>
+    </svg>
+    <div class="maplegend">
+      <span><i style="background:#F5A524"></i>Ligne 1</span>
+      <span><i style="background:#7FD1C0"></i>Ligne 2</span>
+      <span><i style="background:#F27D5E"></i>Busway</span>
+    </div>
+    <div class="mapstats"><span>151 stations · un tram toutes les 8 min</span></div>
+  </div>
+</main>
+
+<section class="tiles">
+  <div class="tile">
+    <div class="tile__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="15" rx="3"/><path d="M5 11h14M9 21l1.5-3M15 21l-1.5-3"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/></svg></div>
+    <div><b>Lignes et horaires</b><span>Les 4 lignes, station par station</span></div>
+  </div>
+  <div class="tile">
+    <div class="tile__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg></div>
+    <div><b>Carte réseau</b><span>Un seul ticket, tout le réseau</span></div>
+  </div>
+  <div class="tile">
+    <div class="tile__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10h16v9H4z"/><path d="M3 10 5 5h14l2 5M9 19v2M15 19v2M8 14h8"/></svg></div>
+    <div><b>Points de vente</b><span>Rechargez près de chez vous</span></div>
+  </div>
+  <div class="tile">
+    <div class="tile__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a3 3 0 0 1-3 3H8l-5 3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3Z"/><path d="M8 9h8M8 13h5"/></svg></div>
+    <div><b>Nous contacter</b><span>Réclamation, suivi, assistance</span></div>
+  </div>
+</section>
+
+<aside class="chat">
+  <div class="chat__head">
+    <div class="chat__avatar">CM</div>
+    <div>
+      <div class="chat__title">Assistant CasaMove</div>
+      <div class="chat__status"><span class="dot"></span>En ligne · répond en 3 langues</div>
+    </div>
+    <button aria-label="Réduire">–</button>
+  </div>
+  <div class="chat__body">
+    <div class="chat__time">Aujourd'hui, 09 h 41</div>
+    <div class="msg msg--user">Dernier tram ligne 1 ?</div>
+    <div class="msg msg--bot">
+      Le dernier départ de la ligne 1 est à <b>23 h 30</b>, de Sidi Mohamed Ben Abdellah vers Ain Diab.
+      <div class="src">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+        Horaires hiver 2026 · maj 12/11
+      </div>
+    </div>
+    <div class="alertmsg"><i></i><div><b>Perturbation ligne 1</b><br>Un itinéraire de remplacement est disponible. Je vous le prépare ?</div></div>
+    <div class="quick"><span>Itinéraire</span><span>Tarif étudiant</span><span>Réclamation</span></div>
+  </div>
+  <div class="chat__foot">Réponses sourcées · données hébergées au Maroc</div>
+  <div class="chat__input">
+    <div>Écrivez votre message…</div>
+    <button class="send" aria-label="Envoyer">➤</button>
+  </div>
+</aside>
+
+</body>
+</html>

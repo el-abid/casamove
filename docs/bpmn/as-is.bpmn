@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Definitions_AsIs" targetNamespace="http://casamove.ma/bpmn">
+  <bpmn:collaboration id="Collab_AsIs">
+    <bpmn:participant id="Pool_AsIs" name="Service client actuel (AS-IS)" processRef="Process_AsIs" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_AsIs" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_AsIs">
+    <bpmn:lane id="Lane_A_Usager" name="Usager">
+      <bpmn:flowNodeRef>A_Start</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>A_Contact</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>A_Canal</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>A_EndOk</bpmn:flowNodeRef>
+    </bpmn:lane>
+    <bpmn:lane id="Lane_A_WhatsApp" name="Assistant WhatsApp">
+      <bpmn:flowNodeRef>A_Bot</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>A_Suffisant</bpmn:flowNodeRef>
+    </bpmn:lane>
+    <bpmn:lane id="Lane_A_Agent" name="Agent service client">
+      <bpmn:flowNodeRef>A_Qualifie</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>A_Repond</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>A_EndRep</bpmn:flowNodeRef>
+    </bpmn:lane>
+    <bpmn:lane id="Lane_A_Back" name="Back-office">
+      <bpmn:flowNodeRef>A_Form</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>A_Saisit</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>A_Maj</bpmn:flowNodeRef>
+      <bpmn:flowNodeRef>A_EndEnv</bpmn:flowNodeRef>
+    </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="A_Start" name="Demande reçue" />
+    <bpmn:userTask id="A_Contact" name="Contacte le service client" />
+    <bpmn:exclusiveGateway id="A_Canal" name="Canal ?" />
+    <bpmn:serviceTask id="A_Bot" name="Bot WhatsApp répond" />
+    <bpmn:exclusiveGateway id="A_Suffisant" name="Réponse suffisante ?" />
+    <bpmn:userTask id="A_Qualifie" name="Qualifie la demande" />
+    <bpmn:userTask id="A_Repond" name="Répond sur le canal d'origine" />
+    <bpmn:userTask id="A_Form" name="Traite le formulaire e-mail" />
+    <bpmn:userTask id="A_Saisit" name="Saisit la réclamation" />
+    <bpmn:userTask id="A_Maj" name="Met à jour le tableau" />
+    <bpmn:endEvent id="A_EndOk" name="Résolu" />
+    <bpmn:endEvent id="A_EndRep" name="Réponse donnée" />
+    <bpmn:endEvent id="A_EndEnv" name="Réponse envoyée" />
+    <bpmn:sequenceFlow id="A_f1" sourceRef="A_Start" targetRef="A_Contact" />
+    <bpmn:sequenceFlow id="A_f2" sourceRef="A_Contact" targetRef="A_Canal" />
+    <bpmn:sequenceFlow id="A_f3" sourceRef="A_Canal" targetRef="A_Bot" name="WhatsApp" />
+    <bpmn:sequenceFlow id="A_f4" sourceRef="A_Canal" targetRef="A_Qualifie" name="Téléphone" />
+    <bpmn:sequenceFlow id="A_f5" sourceRef="A_Canal" targetRef="A_Form" name="Formulaire" />
+    <bpmn:sequenceFlow id="A_f6" sourceRef="A_Bot" targetRef="A_Suffisant" />
+    <bpmn:sequenceFlow id="A_f7" sourceRef="A_Suffisant" targetRef="A_EndOk" name="oui" />
+    <bpmn:sequenceFlow id="A_f8" sourceRef="A_Suffisant" targetRef="A_Qualifie" name="non" />
+    <bpmn:sequenceFlow id="A_f9" sourceRef="A_Qualifie" targetRef="A_Repond" />
+    <bpmn:sequenceFlow id="A_f10" sourceRef="A_Repond" targetRef="A_EndRep" />
+    <bpmn:sequenceFlow id="A_f11" sourceRef="A_Form" targetRef="A_Saisit" />
+    <bpmn:sequenceFlow id="A_f12" sourceRef="A_Saisit" targetRef="A_Maj" />
+    <bpmn:sequenceFlow id="A_f13" sourceRef="A_Maj" targetRef="A_EndEnv" />
+    <bpmn:textAnnotation id="A_Ann1">
+      <bpmn:text>Rupture de canal : l'usager doit revenir sur WhatsApp</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="A_Ann1_assoc" sourceRef="A_Ann1" targetRef="A_Repond" />
+    <bpmn:textAnnotation id="A_Ann2">
+      <bpmn:text>Aucun numéro de dossier, aucun SLA</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="A_Ann2_assoc" sourceRef="A_Ann2" targetRef="A_Saisit" />
+    <bpmn:textAnnotation id="A_Ann3">
+      <bpmn:text>Suivi manuel, invisible pour l'usager</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="A_Ann3_assoc" sourceRef="A_Ann3" targetRef="A_Maj" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_AsIs">
+    <bpmndi:BPMNPlane id="Plane_AsIs" bpmnElement="Collab_AsIs">
+      <bpmndi:BPMNShape id="Pool_AsIs_di" bpmnElement="Pool_AsIs" isHorizontal="true">
+        <dc:Bounds x="0" y="0" width="1500" height="650" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_A_Usager_di" bpmnElement="Lane_A_Usager" isHorizontal="true">
+        <dc:Bounds x="30" y="0" width="1470" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_A_WhatsApp_di" bpmnElement="Lane_A_WhatsApp" isHorizontal="true">
+        <dc:Bounds x="30" y="150" width="1470" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_A_Agent_di" bpmnElement="Lane_A_Agent" isHorizontal="true">
+        <dc:Bounds x="30" y="300" width="1470" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_A_Back_di" bpmnElement="Lane_A_Back" isHorizontal="true">
+        <dc:Bounds x="30" y="450" width="1470" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_Start_di" bpmnElement="A_Start">
+        <dc:Bounds x="122" y="57" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_Contact_di" bpmnElement="A_Contact">
+        <dc:Bounds x="255" y="35" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_Canal_di" bpmnElement="A_Canal">
+        <dc:Bounds x="455" y="50" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_Bot_di" bpmnElement="A_Bot">
+        <dc:Bounds x="575" y="185" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_Suffisant_di" bpmnElement="A_Suffisant">
+        <dc:Bounds x="775" y="200" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_Qualifie_di" bpmnElement="A_Qualifie">
+        <dc:Bounds x="915" y="335" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_Repond_di" bpmnElement="A_Repond">
+        <dc:Bounds x="1095" y="335" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_Form_di" bpmnElement="A_Form">
+        <dc:Bounds x="575" y="485" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_Saisit_di" bpmnElement="A_Saisit">
+        <dc:Bounds x="915" y="485" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_Maj_di" bpmnElement="A_Maj">
+        <dc:Bounds x="1095" y="485" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_EndOk_di" bpmnElement="A_EndOk">
+        <dc:Bounds x="1182" y="57" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_EndRep_di" bpmnElement="A_EndRep">
+        <dc:Bounds x="1342" y="357" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_EndEnv_di" bpmnElement="A_EndEnv">
+        <dc:Bounds x="1342" y="507" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_Ann1_di" bpmnElement="A_Ann1">
+        <dc:Bounds x="1100" y="170" width="250" height="46" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_Ann2_di" bpmnElement="A_Ann2">
+        <dc:Bounds x="640" y="585" width="240" height="46" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="A_Ann3_di" bpmnElement="A_Ann3">
+        <dc:Bounds x="1060" y="585" width="250" height="46" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="A_f1_di" bpmnElement="A_f1">
+        <di:waypoint x="158" y="75" />
+        <di:waypoint x="255" y="75" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_f2_di" bpmnElement="A_f2">
+        <di:waypoint x="385" y="75" />
+        <di:waypoint x="455" y="75" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_f3_di" bpmnElement="A_f3">
+        <di:waypoint x="480" y="100" />
+        <di:waypoint x="520" y="100" />
+        <di:waypoint x="520" y="225" />
+        <di:waypoint x="575" y="225" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="530" y="90" width="78" height="18" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_f4_di" bpmnElement="A_f4">
+        <di:waypoint x="455" y="100" />
+        <di:waypoint x="455" y="320" />
+        <di:waypoint x="980" y="320" />
+        <di:waypoint x="980" y="335" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="720" y="330" width="80" height="18" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_f5_di" bpmnElement="A_f5">
+        <di:waypoint x="505" y="100" />
+        <di:waypoint x="505" y="525" />
+        <di:waypoint x="575" y="525" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="488" y="468" width="80" height="18" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_f6_di" bpmnElement="A_f6">
+        <di:waypoint x="705" y="225" />
+        <di:waypoint x="775" y="225" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_f7_di" bpmnElement="A_f7">
+        <di:waypoint x="800" y="200" />
+        <di:waypoint x="800" y="75" />
+        <di:waypoint x="1182" y="75" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_f8_di" bpmnElement="A_f8">
+        <di:waypoint x="800" y="250" />
+        <di:waypoint x="800" y="300" />
+        <di:waypoint x="950" y="300" />
+        <di:waypoint x="950" y="335" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_f9_di" bpmnElement="A_f9">
+        <di:waypoint x="1045" y="375" />
+        <di:waypoint x="1095" y="375" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_f10_di" bpmnElement="A_f10">
+        <di:waypoint x="1225" y="375" />
+        <di:waypoint x="1342" y="375" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_f11_di" bpmnElement="A_f11">
+        <di:waypoint x="705" y="525" />
+        <di:waypoint x="915" y="525" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_f12_di" bpmnElement="A_f12">
+        <di:waypoint x="1045" y="525" />
+        <di:waypoint x="1095" y="525" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_f13_di" bpmnElement="A_f13">
+        <di:waypoint x="1225" y="525" />
+        <di:waypoint x="1342" y="525" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_Ann1_assoc_di" bpmnElement="A_Ann1_assoc">
+        <di:waypoint x="1100" y="193" />
+        <di:waypoint x="1160" y="335" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_Ann2_assoc_di" bpmnElement="A_Ann2_assoc">
+        <di:waypoint x="880" y="608" />
+        <di:waypoint x="980" y="565" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="A_Ann3_assoc_di" bpmnElement="A_Ann3_assoc">
+        <di:waypoint x="1160" y="585" />
+        <di:waypoint x="1160" y="565" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

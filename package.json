@@ -1,0 +1,65 @@
+{
+  "name": "casamove",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "npm run build && vitest run",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "db:start": "powershell -ExecutionPolicy Bypass -File scripts/db.ps1 start",
+    "db:stop": "powershell -ExecutionPolicy Bypass -File scripts/db.ps1 stop",
+    "db:status": "powershell -ExecutionPolicy Bypass -File scripts/db.ps1 status",
+    "db:init": "powershell -ExecutionPolicy Bypass -File scripts/db.ps1 init",
+    "db:seed": "powershell -ExecutionPolicy Bypass -File scripts/seed.ps1",
+    "db:seed:tickets": "node scripts/seed-tickets.ts",
+    "db:seed:subs": "node scripts/seed-subscriptions.mjs",
+    "db:admin": "node scripts/create-admin.mjs",
+    "test:api": "vitest run tests/api",
+    "test:unit": "vitest run tests/unit",
+    "db:seed:subs": "node scripts/seed-subscriptions.mjs",
+    "embeddings:build": "node scripts/build-embeddings.mjs",
+    "test:smoke": "vitest run --config vitest.smoke.config.ts",
+    "tickets:reclassify": "node scripts/reclassify-tickets.ts",
+    "tickets:lines": "node scripts/backfill-lines.ts",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:seed": "docker compose --profile seed run --rm seed",
+    "docker:logs": "docker compose logs -f app",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"**/*.{ts,tsx,json,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,json,css}\"",
+    "check": "npm run typecheck && npm run test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@langchain/core": "^1.4.2",
+    "@langchain/langgraph": "^1.7.5",
+    "@langchain/langgraph-checkpoint-postgres": "^1.1.4",
+    "next": "^16.4.6",
+    "pg": "^8.23.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "prettier": "^3.10.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1"
+  },
+  "private": "true",
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}

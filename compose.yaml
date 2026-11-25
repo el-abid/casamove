@@ -1,0 +1,77 @@
+name: casamove
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${CASAMOVE_DB_NAME:-casamove}
+      POSTGRES_USER: ${CASAMOVE_DB_USER:-casamove}
+      POSTGRES_PASSWORD: ${CASAMOVE_DB_PASSWORD:-casamove}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\"",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      target: runner
+    environment:
+      DATABASE_URL: postgresql://${CASAMOVE_DB_USER:-casamove}:${CASAMOVE_DB_PASSWORD:-casamove}@db:5432/${CASAMOVE_DB_NAME:-casamove}
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
+      NVIDIA_BASE_URL: ${NVIDIA_BASE_URL:-https://integrate.api.nvidia.com/v1}
+      NVIDIA_MODEL: ${NVIDIA_MODEL:-nvidia/nemotron-3.5-bolt-e4b}
+      NVIDIA_EMBED_MODEL: ${NVIDIA_EMBED_MODEL:-nvidia/nemotron-3.5-embed-1b}
+      LLM_ENABLED: ${LLM_ENABLED:-true}
+      EMBEDDINGS_ENABLED: ${EMBEDDINGS_ENABLED:-true}
+      RENEWAL_AUTO: ${RENEWAL_AUTO:-true}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 15s
+      start_period: 45s
+      retries: 5
+    init: true
+    restart: unless-stopped
+
+  seed:
+    profiles: ["seed"]
+    build:
+      context: .
+      target: tools
+    environment:
+      DATABASE_URL: postgresql://${CASAMOVE_DB_USER:-casamove}:${CASAMOVE_DB_PASSWORD:-casamove}@db:5432/${CASAMOVE_DB_NAME:-casamove}
+    depends_on:
+      db:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - |
+        node scripts/seed-tickets.ts
+        node scripts/seed-subscriptions.mjs
+        node scripts/create-admin.mjs admin@casamove.ma CasaMove2026! "Admin CasaMove" 0600000000
+    restart: "no"
+
+volumes:
+  postgres_data:
