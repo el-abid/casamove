@@ -120,6 +120,7 @@ content/             Dictionnaires FR/AR/EN et textes du site
 scripts/             Base locale, seeds et maintenance
 tests/               unit, api, smoke, helpers et setup
 docs/                Cahier des charges, note, scénario, PDF
+docs/agents/         Cinq fiches PDF pour expliquer chaque agent
 ```
 
 Règles de dépendance :

@@ -1,1 +1,14 @@
-{"name":"casamove-docs","private":true,"type":"module","dependencies":{"marked":"^18.2.1","pdfkit":"^0.21.0"}}
+{
+  "name": "casamove-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:docs": "node build-docs.mjs",
+    "build:guide": "node build-guide-pdf.mjs",
+    "build:agents": "node build-agent-pdfs.mjs"
+  },
+  "dependencies": {
+    "marked": "^18.2.1",
+    "pdfkit": "^0.21.0"
+  }
+}
