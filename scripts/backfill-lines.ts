@@ -1,17 +1,9 @@
 import pg from "pg";
 
 import { lineOfQuery } from "../lib/agent/classification.ts";
+import { resolveDatabaseUrl } from "./db-url.mjs";
 
-if (!process.env.DATABASE_URL) {
-  try {
-    process.loadEnvFile(".env.local");
-  } catch {
-    // fichier absent
-  }
-}
-
-const connectionString =
-  process.env.DATABASE_URL ?? "postgresql://casamove@127.0.0.1:5544/casamove";
+const connectionString = resolveDatabaseUrl();
 
 const client = new pg.Client({ connectionString });
 await client.connect();

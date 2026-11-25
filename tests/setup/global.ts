@@ -40,7 +40,7 @@ export default async function setup() {
     ],
     {
       cwd: ROOT,
-      env: { ...process.env, DATABASE_URL: TEST_DB_URL },
+      env: { ...process.env, CASAMOVE_DATABASE_URL: TEST_DB_URL },
       stdio: "ignore",
     }
   );
@@ -50,7 +50,7 @@ export default async function setup() {
     [path.join(ROOT, "scripts", "seed-subscriptions.mjs")],
     {
       cwd: ROOT,
-      env: { ...process.env, DATABASE_URL: TEST_DB_URL },
+      env: { ...process.env, CASAMOVE_DATABASE_URL: TEST_DB_URL },
       stdio: "ignore",
     }
   );
@@ -82,7 +82,7 @@ export default async function setup() {
       cwd: ROOT,
       env: {
         ...process.env,
-        DATABASE_URL: TEST_DB_URL,
+        CASAMOVE_DATABASE_URL: TEST_DB_URL,
         LLM_ENABLED: "false",
         EMBEDDINGS_ENABLED: "false",
         RENEWAL_AUTO: "false",

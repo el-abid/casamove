@@ -1,3 +1,9 @@
+$db = if ($env:CASAMOVE_DATABASE_URL) {
+  $env:CASAMOVE_DATABASE_URL
+} else {
+  "postgresql://casamove@127.0.0.1:5544/casamove_dev"
+}
+
 & "C:\Program Files\PostgreSQL\18\bin\psql.exe" `
-  -h 127.0.0.1 -p 5544 -U casamove -d casamove `
+  $db `
   -f (Join-Path $PSScriptRoot "seed.sql")

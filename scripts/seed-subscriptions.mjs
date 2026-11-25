@@ -1,17 +1,9 @@
 import { randomBytes, scryptSync } from "node:crypto";
 import pg from "pg";
 
-if (!process.env.DATABASE_URL) {
-  try {
-    process.loadEnvFile(".env.local");
-  } catch {
-    // fichier absent
-  }
-}
+import { resolveDatabaseUrl } from "./db-url.mjs";
 
-const connectionString =
-  process.env.DATABASE_URL ??
-  "postgresql://casamove@127.0.0.1:5544/casamove";
+const connectionString = resolveDatabaseUrl();
 
 function hashPassword(password) {
   const salt = randomBytes(16).toString("hex");

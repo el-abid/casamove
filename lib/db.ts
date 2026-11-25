@@ -1,7 +1,10 @@
 import { Pool } from "pg";
 
+// Cette app ne lit jamais DATABASE_URL directement : sur ce poste la variable
+// globale pointe vers une autre base (dental_saas). Voir scripts/db-url.mjs.
 export const connectionString =
-  process.env.DATABASE_URL ?? "postgresql://casamove@127.0.0.1:5544/casamove";
+  process.env.CASAMOVE_DATABASE_URL ??
+  "postgresql://casamove@127.0.0.1:5544/casamove_dev";
 
 const globalDb = globalThis as unknown as {
   __casamovePool?: Pool;

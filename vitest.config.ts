@@ -15,7 +15,8 @@ export default defineConfig({
     include: ["tests/unit/**/*.test.ts", "tests/api/**/*.test.ts"],
     globalSetup: ["./tests/setup/global.ts"],
     env: {
-      DATABASE_URL: "postgresql://casamove@127.0.0.1:5544/casamove_test",
+      CASAMOVE_DATABASE_URL:
+        "postgresql://casamove@127.0.0.1:5544/casamove_test",
       LLM_ENABLED: "false",
       EMBEDDINGS_ENABLED: "false",
       RENEWAL_AUTO: "false",
