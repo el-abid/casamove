@@ -2,10 +2,11 @@ node_modules
 .next
 out
 .env
-.env.docker
-.env*.local
+.env.*
+!.env.example
+!.env.docker.example
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
 .pgdata
-.env.local
+.playwright-mcp/

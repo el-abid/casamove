@@ -57,17 +57,25 @@ L'image est multi-étapes : dépendances, build Next.js standalone, runtime non-
 ```bash
 cp .env.docker.example .env.docker
 docker compose --env-file .env.docker up -d --build
-docker compose --env-file .env.docker run --rm seed
+docker compose --env-file .env.docker run --rm --build seed
 ```
 
 Sans fichier d'environnement, les valeurs de démonstration suffisent :
 
 ```bash
 docker compose up -d --build
-docker compose run --rm seed
+docker compose run --rm --build seed
 ```
 
-Le seed charge 24 dossiers VoC, les trois comptes usagers et l'admin. Il est idempotent.
+Sur une base de démonstration neuve, le seed charge 24 dossiers VoC, trois comptes usagers et un compte administrateur. Les identifiants du tableau sont réservés à une démonstration locale.
+
+La première requête de mobilité qui accède à PostgreSQL applique les migrations et importe le réseau. Pour déclencher et vérifier cet import explicitement, exécuter la commande suivante. Utiliser le même fichier `.env.docker` pour toutes les commandes si la configuration personnalisée est activée.
+
+```bash
+docker compose run --rm --build seed node scripts/import-mobility-network.ts
+```
+
+L’import est idempotent et affiche la version du réseau ainsi que le nombre de lignes, de stations et de correspondances. La mobilité fonctionne avec les valeurs Compose par défaut. `NVIDIA_API_KEY` sert uniquement aux fonctionnalités IA existantes.
 
 | Commande | Effet |
 |---|---|
@@ -76,11 +84,7 @@ Le seed charge 24 dossiers VoC, les trois comptes usagers et l'admin. Il est ide
 | `npm run docker:logs` | Suit les logs de l'application |
 | `npm run docker:down` | Arrête les conteneurs, conserve les données |
 
-L'application écoute sur `http://localhost:3000`. Les migrations tournent au premier appel de `/api/health`. Pour vider aussi la base :
-
-```bash
-docker compose down -v
-```
+L’application écoute sur `http://localhost:3000` par défaut. Le premier appel à `/api/health` applique les migrations de base.
 
 Détails, variables et dépannage : `docs/docker.md`.
 
