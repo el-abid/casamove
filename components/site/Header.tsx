@@ -1,29 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { navItems } from "@/content/site";
+import { mobilityText } from "@/content/mobility";
 import type { Dict, Locale } from "@/content/dictionary";
 
-function SearchIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.5-3.5" />
-    </svg>
-  );
-}
+const navigation = [
+  ["", "home"],
+  ["/journey", "journey"],
+  ["/network", "network"],
+  ["/traffic", "traffic"],
+  ["/reports", "reports"],
+  ["/account", "space"],
+  ["/assistance", "help"],
+] as const;
 
 export function Header({ dict, locale }: { dict: Dict; locale: Locale }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <header className="site-header">
@@ -42,27 +37,24 @@ export function Header({ dict, locale }: { dict: Dict; locale: Locale }) {
           className={open ? "nav nav--open" : "nav"}
           aria-label={dict.a11y.menu}
         >
-          {navItems.map((item, index) => (
-            <Link
-              key={item.key}
-              href={item.href}
-              className={index === 0 ? "is-active" : undefined}
-              aria-current={index === 0 ? "page" : undefined}
+          {navigation.map(([path, label]) => (
+            <a
+              key={label}
+              href={`/${locale}${path}`}
+              className={
+                pathname === `/${locale}${path}` ? "is-active" : undefined
+              }
+              aria-current={
+                pathname === `/${locale}${path}` ? "page" : undefined
+              }
               onClick={() => setOpen(false)}
             >
-              {dict.nav[item.key]}
-            </Link>
+              {mobilityText(locale, label)}
+            </a>
           ))}
         </nav>
 
         <div className="header__actions">
-          <div className="search">
-            <SearchIcon />
-            {dict.header.search}
-          </div>
-          <Link className="btn" href="#tarifs">
-            {dict.header.recharge}
-          </Link>
           <button
             type="button"
             className="menu-btn"

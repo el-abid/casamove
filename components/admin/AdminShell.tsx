@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 
 import type { HealthStatus } from "@/lib/health";
 
@@ -24,6 +25,24 @@ export function AdminShell({
       <aside className="adm-rail">
         <div className="adm-rail__mark">CM</div>
         <nav className="adm-rail__nav" aria-label="Navigation console">
+          <Link
+            className="adm-rail__item"
+            href="/admin/mobility"
+            title="Mobility Control Tower"
+            aria-label="Mobility Control Tower"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              aria-hidden
+            >
+              <path d="M3 12h18M8 5l-5 7 5 7M16 5l5 7-5 7" />
+            </svg>
+          </Link>
           <button
             type="button"
             className={`adm-rail__item ${tab === "queue" ? "is-active" : ""}`}

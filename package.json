@@ -21,7 +21,6 @@
     "db:admin": "node scripts/create-admin.mjs",
     "test:api": "vitest run tests/api",
     "test:unit": "vitest run tests/unit",
-    "db:seed:subs": "node scripts/seed-subscriptions.mjs",
     "embeddings:build": "node scripts/build-embeddings.mjs",
     "test:smoke": "vitest run --config vitest.smoke.config.ts",
     "tickets:reclassify": "node scripts/reclassify-tickets.ts",
@@ -44,12 +43,14 @@
     "@langchain/core": "^1.4.2",
     "@langchain/langgraph": "^1.7.5",
     "@langchain/langgraph-checkpoint-postgres": "^1.1.4",
+    "leaflet": "1.9.4",
     "next": "^16.4.6",
     "pg": "^8.23.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@types/leaflet": "1.9.21",
     "@types/node": "^26.6.6",
     "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",

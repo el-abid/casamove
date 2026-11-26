@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { contact, socials } from "@/content/site";
 import type { Dict, Locale } from "@/content/dictionary";
+import { mobilityText } from "@/content/mobility";
 
 export function Footer({ dict, locale }: { dict: Dict; locale: Locale }) {
   return (
@@ -44,10 +45,17 @@ export function Footer({ dict, locale }: { dict: Dict; locale: Locale }) {
           <div>
             <h3>{dict.footer.linksTitle}</h3>
             <div className="footer__links">
-              {dict.footer.links.map((link) => (
-                <a key={link} href="#contact">
-                  {link}
-                </a>
+              {(
+                [
+                  ["journey", "journey"],
+                  ["network", "network"],
+                  ["traffic", "traffic"],
+                  ["assistance", "help"],
+                ] as const
+              ).map(([path, label]) => (
+                <Link key={path} href={`/${locale}/${path}`}>
+                  {mobilityText(locale, label)}
+                </Link>
               ))}
             </div>
           </div>

@@ -1,6 +1,11 @@
 # CasaMove
 
-Service client pour le réseau de transport CasaMove. Le projet couvre le chat usager, le RAG documentaire, la console agents, la voix du client, la proactivité et le cycle complet de réclamation.
+CasaMove réunit un planificateur tramway et busway, le réseau de Casablanca, une console de supervision et les services d’assistance existants.
+
+- [Guide voyageur et supervision](docs/upgrade/04-user-guide.md)
+- [Scénario de démonstration](docs/upgrade/06-demo-scenario.md)
+- [Données du réseau](docs/upgrade/01-network-data.md)
+- [Contrats de l’API de mobilité](docs/upgrade/03-api-integration-contracts.md)
 
 ## Stack
 
@@ -30,7 +35,10 @@ npm run db:admin -- admin@exemple.ma MotDePasse2026! "Nom Admin" 0600000000
 | URL | Usage |
 |---|---|
 | `http://localhost:3000/fr` | Site et chat usager |
+| `http://localhost:3000/fr/journey` | Planificateur et compagnon de trajet |
+| `http://localhost:3000/fr/network` | Réseau schématique et géographique |
 | `http://localhost:3000/admin` | Console agents |
+| `http://localhost:3000/admin/mobility` | Supervision des simulations et modération des signalements |
 | `http://localhost:3000/login` | Connexion |
 
 Comptes de démonstration :
@@ -87,7 +95,7 @@ Détails, variables et dépannage : `docs/docker.md`.
 | `npm run typecheck` | Vérification TypeScript |
 | `npm run format` | Formatage Prettier |
 | `npm run format:check` | Vérifie le formatage sans écrire |
-| `npm run test` | Build puis 108 tests Vitest |
+| `npm run test` | Build puis tests Vitest |
 | `npm run test:unit` | Tests unitaires |
 | `npm run test:api` | Tests API sur `casamove_test` |
 | `npm run test:smoke` | Retrieval et routeur avec l'API réelle |
@@ -144,7 +152,7 @@ Voir `docs/architecture.md` pour les flux et les conventions détaillées.
 
 ## Qualité
 
-`npm run typecheck` vérifie TypeScript, `npm run format:check` vérifie le style, `npm run test` construit l'application puis exécute les 108 tests. ESLint n'est pas branché : `typescript-eslint` 8.74 ne supporte pas encore TypeScript 7.0.
+`npm run typecheck` vérifie TypeScript, `npm run format:check` vérifie le style et `npm run test` construit l'application puis exécute les tests Vitest. Les résultats de la mise à niveau figurent dans le [rapport de tests](docs/upgrade/05-test-report.md).
 
 ## Limites assumées
 

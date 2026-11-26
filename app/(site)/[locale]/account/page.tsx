@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 
 import { LogoutButton } from "@/components/site/LogoutButton";
+import { PersonalSpace } from "@/components/mobility/PersonalSpace";
 import { dictionary, isLocale } from "@/content/dictionary";
+import { mobilityText } from "@/content/mobility";
 import { listTicketsByUser } from "@/lib/agent/tickets";
 import {
   describeSubscription,
@@ -40,7 +42,7 @@ export default async function AccountPage({
   });
 
   return (
-    <main className="section">
+    <main className="section mob-site mob-account" id="main-content">
       <div className="container account">
         <header className="account__head">
           <div>
@@ -59,7 +61,7 @@ export default async function AccountPage({
             <p className="account__value">{user.phone ?? "—"}</p>
           </aside>
 
-          <section className="account__card">
+          <section className="account__card" id="account-complaints">
             <h2>{dict.account.tickets}</h2>
 
             {tickets.length === 0 ? (
@@ -105,10 +107,14 @@ export default async function AccountPage({
           ) : null}
         </div>
 
-        <section className="account__card account__sub">
-          <h2>{dict.account.subscription}</h2>
+        <section
+          id="mobility-wallet"
+          className="account__card account__sub mob-wallet"
+        >
+          <span className="mob-tag">{mobilityText(locale, "demoWallet")}</span>
+          <h2>{mobilityText(locale, "wallet")}</h2>
 
-          {subscriptionInfo ? (
+          {subscriptionInfo && subscription ? (
             <div className="account__subrow">
               <div>
                 <span>{dict.account.subscription}</span>
@@ -117,18 +123,33 @@ export default async function AccountPage({
                 </b>
               </div>
               <div>
-                <span>{dict.account.ends}</span>
-                <b>{dateFormat.format(new Date(subscriptionInfo.endsAt))}</b>
+                <span>{mobilityText(locale, "validity")}</span>
+                <b>
+                  {dateFormat.formatRange(
+                    new Date(subscription.startedAt),
+                    new Date(subscriptionInfo.endsAt)
+                  )}
+                </b>
               </div>
               <div>
                 <span>{dict.account.daysLeft}</span>
                 <b>{subscriptionInfo.daysLeft}</b>
+              </div>
+              <div>
+                <span>{mobilityText(locale, "renewal")}</span>
+                <b>
+                  {mobilityText(
+                    locale,
+                    subscription.autoRenew ? "enabled" : "disabled"
+                  )}
+                </b>
               </div>
             </div>
           ) : (
             <p className="account__empty">{dict.account.noSubscription}</p>
           )}
         </section>
+        <PersonalSpace locale={locale} />
       </div>
     </main>
   );

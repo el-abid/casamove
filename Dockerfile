@@ -24,6 +24,7 @@ RUN groupadd --system --gid 1001 nodejs \
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/lib/agent/embeddings.json ./lib/agent/embeddings.json
 
 USER nextjs
@@ -40,4 +41,6 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY package.json package-lock.json ./
 COPY scripts ./scripts
 COPY lib/db.ts ./lib/db.ts
+COPY lib/mobility ./lib/mobility
+COPY content/network ./content/network
 CMD ["node", "--version"]
