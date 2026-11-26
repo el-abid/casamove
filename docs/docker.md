@@ -63,7 +63,7 @@ Le seed est idempotent :
 
 Les variables `POSTGRES_*` du poste ne sont pas utilisées. Le projet utilise `CASAMOVE_DB_*` pour éviter les collisions avec un Postgres local.
 
-Le mot de passe est inséré dans `DATABASE_URL`. Il doit être compatible URL, ou être encodé avant d'être placé dans l'URL.
+Le mot de passe est inséré dans `CASAMOVE_DATABASE_URL`. Il doit être compatible URL, ou être encodé avant d'être placé dans l'URL. Compose construit cette variable à partir de `CASAMOVE_DB_*`.
 
 ## 5. Exploitation
 
@@ -120,6 +120,6 @@ Vérifications effectuées le 25 novembre 2026 :
 |---|---|---|
 | `port is already allocated` | Un serveur local écoute sur 3000 | Arrêter `npm run start` ou changer `APP_PORT` |
 | `password authentication failed` | Volume créé avec d'autres identifiants | `docker compose down -v`, puis relancer |
-| `Invalid URL` au démarrage | Mot de passe non encodé dans `DATABASE_URL` | Utiliser un mot de passe URL-safe |
+| `Invalid URL` au démarrage | Mot de passe non encodé dans `CASAMOVE_DATABASE_URL` | Utiliser un mot de passe URL-safe |
 | Health `503` | Postgres pas prêt ou schéma en erreur | Vérifier `docker compose logs db` |
 | Pas de réponse LLM | `NVIDIA_API_KEY` absente | Le lexical prend le relais, ou renseigner la clé |

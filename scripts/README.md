@@ -11,4 +11,4 @@
 | `reclassify-tickets.ts` | `npm run tickets:reclassify` | Reclasse thème, priorité, sentiment et SLA |
 | `backfill-lines.ts` | `npm run tickets:lines` | Extrait la ligne des dossiers existants |
 
-Les scripts de maintenance supposent `DATABASE_URL` défini ou le fichier `.env.local` présent.
+Les scripts de maintenance supposent `CASAMOVE_DATABASE_URL` défini ou le fichier `.env.local` présent.
