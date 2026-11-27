@@ -480,6 +480,7 @@ export function JourneyPlanner({
   return (
     <div
       className={compact ? "mob-planner mob-planner--compact" : "mob-planner"}
+      data-reveal={compact ? undefined : true}
     >
       <div className="mob-card mob-planner-card">
         <h2>
@@ -635,7 +636,7 @@ export function JourneyPlanner({
             </section>
           )}
           {tracking && (
-            <section className="mob-card mob-companion">
+            <section className="mob-card mob-companion" data-reveal>
               <span className="mob-tag">{t("manual")}</span>
               <h2>{t("companion")}</h2>
               <p>
@@ -703,7 +704,7 @@ export function JourneyPlanner({
             </p>
           )}
           {route && plan && (
-            <section className="mob-card mob-route-result">
+            <section className="mob-card mob-route-result" data-reveal>
               {!tracking && result && result.journeys.length > 1 && (
                 <div className="mob-filters">
                   {result.journeys.map((journey, index) => (

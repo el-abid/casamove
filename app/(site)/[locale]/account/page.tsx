@@ -44,7 +44,7 @@ export default async function AccountPage({
   return (
     <main className="section mob-site mob-account" id="main-content">
       <div className="container account">
-        <header className="account__head">
+        <header className="account__head" data-reveal>
           <div>
             <span className="kicker">{dict.account.title}</span>
             <h1>{user.fullName}</h1>
@@ -54,14 +54,14 @@ export default async function AccountPage({
         </header>
 
         <div className="account__grid">
-          <aside className="account__card">
+          <aside className="account__card" data-reveal>
             <h2>{dict.account.email}</h2>
             <p className="account__value">{user.email}</p>
             <h2>{dict.account.phone}</h2>
             <p className="account__value">{user.phone ?? "—"}</p>
           </aside>
 
-          <section className="account__card" id="account-complaints">
+          <section className="account__card" id="account-complaints" data-reveal>
             <h2>{dict.account.tickets}</h2>
 
             {tickets.length === 0 ? (
@@ -90,7 +90,7 @@ export default async function AccountPage({
           </section>
 
           {replies.length > 0 ? (
-            <section className="account__card account__replies">
+            <section className="account__card account__replies" data-reveal>
               <h2>{dict.account.responses}</h2>
               <div className="account__list">
                 {replies.map((ticket) => (
@@ -110,6 +110,7 @@ export default async function AccountPage({
         <section
           id="mobility-wallet"
           className="account__card account__sub mob-wallet"
+          data-reveal
         >
           <span className="mob-tag">{mobilityText(locale, "demoWallet")}</span>
           <h2>{mobilityText(locale, "wallet")}</h2>

@@ -21,6 +21,31 @@ const labels = {
     "اجمع بين الطرامواي والباصواي في رحلة واحدة.",
     "Plan a single journey across tramway and busway.",
   ],
+  journeyLead: [
+    "Comparez tramway et busway, ajustez vos préférences et gardez votre trajet sous la main.",
+    "قارن بين الطرامواي والباصواي، واضبط تفضيلاتك، واحفظ مسارك.",
+    "Compare tramway and busway, tune your preferences and keep your journey close.",
+  ],
+  networkLead: [
+    "Six lignes, 151 stations. Passez du plan schématique à la carte géographique.",
+    "ستة خطوط و151 محطة. انتقل بين المخطط والخرائط الجغرافية.",
+    "Six lines, 151 stations. Switch between the schematic plan and the geographic map.",
+  ],
+  trafficLead: [
+    "L’état du réseau et les perturbations signalées, ligne par ligne.",
+    "حالة الشبكة والاضطرابات المُبلَّغ عنها، خطًا بخط.",
+    "Network status and reported disruptions, line by line.",
+  ],
+  reportsLead: [
+    "Signalez un incident et suivez son traitement par l’équipe réseau.",
+    "أبلغ عن حادث وتتبّع معالجته من طرف فريق الشبكة.",
+    "Report an incident and follow how the network team handles it.",
+  ],
+  helpLead: [
+    "Une question, un blocage, un objet perdu ? L’assistance CasaMove répond.",
+    "سؤال، عطل، أو غرض مفقود؟ مساعدة كازاموف في خدمتك.",
+    "A question, a blocked trip, a lost item? CasaMove support answers.",
+  ],
   plan: ["Calculer l’itinéraire", "احسب المسار", "Find a route"],
   plannerTitle: ["Préparez votre trajet", "خطّط لرحلتك", "Plan your journey"],
   from: ["Départ", "الانطلاق", "From"],
@@ -211,6 +236,7 @@ const labels = {
   saveRoute: ["Enregistrer le trajet", "احفظ المسار", "Save journey"],
   routeName: ["Nom du trajet", "اسم المسار", "Journey name"],
   signIn: ["Se connecter", "تسجيل الدخول", "Sign in"],
+  register: ["Créer un compte", "إنشاء حساب", "Create account"],
   signInSave: [
     "Connectez-vous pour enregistrer ce trajet.",
     "سجّل الدخول لحفظ هذا المسار.",

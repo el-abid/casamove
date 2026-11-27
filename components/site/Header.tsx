@@ -3,8 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import {
+  localeNames,
+  locales,
+  type Dict,
+  type Locale,
+} from "@/content/dictionary";
 import { mobilityText } from "@/content/mobility";
-import type { Dict, Locale } from "@/content/dictionary";
+import { LogoutButton } from "./LogoutButton";
 
 const navigation = [
   ["", "home"],
@@ -16,9 +22,21 @@ const navigation = [
   ["/assistance", "help"],
 ] as const;
 
-export function Header({ dict, locale }: { dict: Dict; locale: Locale }) {
+export function Header({
+  dict,
+  locale,
+  signedIn,
+}: {
+  dict: Dict;
+  locale: Locale;
+  signedIn: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const links = signedIn
+    ? navigation
+    : navigation.filter(([, label]) => label !== "space");
+  const rest = pathname.replace(/^\/(fr|ar|en)(?=\/|$)/, "");
 
   return (
     <header className="site-header">
@@ -37,7 +55,7 @@ export function Header({ dict, locale }: { dict: Dict; locale: Locale }) {
           className={open ? "nav nav--open" : "nav"}
           aria-label={dict.a11y.menu}
         >
-          {navigation.map(([path, label]) => (
+          {links.map(([path, label]) => (
             <a
               key={label}
               href={`/${locale}${path}`}
@@ -52,6 +70,48 @@ export function Header({ dict, locale }: { dict: Dict; locale: Locale }) {
               {mobilityText(locale, label)}
             </a>
           ))}
+
+          <div className="nav__extras">
+            <div className="lang" aria-label={dict.a11y.language}>
+              {locales.map((item) => (
+                <Link
+                  key={item}
+                  href={`/${item}${rest}`}
+                  hrefLang={item}
+                  aria-current={item === locale ? "true" : undefined}
+                  onClick={() => setOpen(false)}
+                >
+                  {localeNames[item]}
+                </Link>
+              ))}
+            </div>
+            <div className="nav__auth">
+              {signedIn ? (
+                <LogoutButton
+                  label={dict.account.logout}
+                  redirectTo={`/${locale}`}
+                  className="nav__logout"
+                />
+              ) : (
+                <>
+                  <Link
+                    className="nav__signin"
+                    href="/login"
+                    onClick={() => setOpen(false)}
+                  >
+                    {mobilityText(locale, "signIn")}
+                  </Link>
+                  <Link
+                    className="nav__register"
+                    href="/register"
+                    onClick={() => setOpen(false)}
+                  >
+                    {mobilityText(locale, "register")}
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
         </nav>
 
         <div className="header__actions">

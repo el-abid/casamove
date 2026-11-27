@@ -3,14 +3,16 @@
 export function LogoutButton({
   label,
   redirectTo,
+  className = "btn btn--ghost",
 }: {
   label: string;
   redirectTo: string;
+  className?: string;
 }) {
   return (
     <button
       type="button"
-      className="btn btn--ghost"
+      className={className}
       onClick={async () => {
         try {
           await fetch("/api/auth/logout", { method: "POST" });

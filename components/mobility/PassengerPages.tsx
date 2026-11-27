@@ -60,7 +60,7 @@ export function PassengerHome({ locale }: { locale: Locale }) {
         <JourneyPlanner locale={locale} compact />
       </section>
       <div className="mob-home-content">
-        <section className="mob-home-network">
+        <section className="mob-home-network" data-reveal>
           <div className="mob-section-heading">
             <div>
               <h2>{t("network")}</h2>
@@ -92,7 +92,7 @@ export function PassengerHome({ locale }: { locale: Locale }) {
             ))}
           </div>
         </section>
-        <section className="mob-home-status">
+        <section className="mob-home-status" data-reveal>
           <div className="mob-section-heading">
             <h2>{t("traffic")}</h2>
             <Link href={`/${locale}/traffic`}>
@@ -102,7 +102,7 @@ export function PassengerHome({ locale }: { locale: Locale }) {
           <StatusPanel locale={locale} state={status} compact />
         </section>
         {saved.length > 0 && (
-          <section className="mob-card mob-home-saved">
+          <section className="mob-card mob-home-saved" data-reveal>
             <h2>{t("saved")}</h2>
             <div className="mob-inline">
               {saved.map((item) => (
@@ -117,7 +117,7 @@ export function PassengerHome({ locale }: { locale: Locale }) {
             </div>
           </section>
         )}
-        <section id="tarifs" className="mob-shortcuts">
+        <section id="tarifs" className="mob-shortcuts" data-reveal>
           {(
             [
               ["reports", "reports", "map"],
@@ -150,7 +150,7 @@ export function NetworkPage({ locale }: { locale: Locale }) {
   }, []);
   return (
     <>
-      <div className="mob-filters mob-map-toggle" aria-label={t("network")}>
+      <div className="mob-filters mob-map-toggle" aria-label={t("network")} data-reveal>
         <button
           type="button"
           aria-pressed={!geographic}
@@ -250,7 +250,7 @@ export function ReportForm({ locale }: { locale: Locale }) {
   }
 
   return (
-    <section className="mob-card mob-form-panel">
+    <section className="mob-card mob-form-panel" data-reveal>
       <p>{t("reportIntro")}</p>
       {!loaded && <p role="status">{t("checking")}</p>}
       {loaded && !authenticated && (
@@ -364,7 +364,7 @@ export function ReportForm({ locale }: { locale: Locale }) {
 export function AssistancePage({ locale }: { locale: Locale }) {
   const t = (label: MobilityLabel) => mobilityText(locale, label);
   return (
-    <section className="mob-card mob-form-panel">
+    <section className="mob-card mob-form-panel" data-reveal>
       <p>{t("assistText")}</p>
       <div className="mob-inline">
         <Link className="mob-button" href={`/${locale}/account`}>

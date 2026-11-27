@@ -8,9 +8,12 @@ import { ChatWidget } from "@/components/chat/ChatWidget";
 import { Pwa } from "@/components/mobility/Pwa";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
-import { UtilityBar } from "@/components/site/UtilityBar";
+import { Reveal } from "@/components/ui/Reveal";
 import { dictionary, dirs, isLocale, locales } from "@/content/dictionary";
 import { mobilityText } from "@/content/mobility";
+import { getCurrentUser } from "@/lib/auth/session";
+
+export const dynamic = "force-dynamic";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -53,19 +56,23 @@ export default async function LocaleLayout({
   if (!isLocale(locale)) notFound();
 
   const dict = dictionary[locale];
+  const user = await getCurrentUser();
 
   return (
     <html lang={locale} dir={dirs[locale]}>
       <body className="mob-passenger">
+        <noscript>
+          <style>{`[data-reveal]{opacity:1 !important;transform:none !important}`}</style>
+        </noscript>
         <a className="mob-skip" href="#main-content">
           {mobilityText(locale, "skip")}
         </a>
-        <UtilityBar dict={dict} locale={locale} />
-        <Header dict={dict} locale={locale} />
+        <Header dict={dict} locale={locale} signedIn={Boolean(user)} />
         {children}
         <Footer dict={dict} locale={locale} />
         <ChatWidget key={locale} dict={dict} locale={locale} />
         <Pwa />
+        <Reveal />
       </body>
     </html>
   );

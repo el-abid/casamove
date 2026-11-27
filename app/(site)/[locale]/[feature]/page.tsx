@@ -10,11 +10,11 @@ import { isLocale } from "@/content/dictionary";
 import { mobilityText } from "@/content/mobility";
 
 const features = {
-  journey: { title: "journey", View: JourneyPlanner },
-  network: { title: "network", View: NetworkPage },
-  traffic: { title: "traffic", View: TrafficPage },
-  reports: { title: "pulse", View: ReportForm },
-  assistance: { title: "help", View: AssistancePage },
+  journey: { title: "journey", lead: "journeyLead", View: JourneyPlanner },
+  network: { title: "network", lead: "networkLead", View: NetworkPage },
+  traffic: { title: "traffic", lead: "trafficLead", View: TrafficPage },
+  reports: { title: "reports", lead: "reportsLead", View: ReportForm },
+  assistance: { title: "help", lead: "helpLead", View: AssistancePage },
 } as const;
 
 export function generateStaticParams() {
@@ -28,11 +28,12 @@ export default async function MobilityPage({
 }) {
   const { locale, feature } = await params;
   if (!isLocale(locale) || !Object.hasOwn(features, feature)) notFound();
-  const { title, View } = features[feature as keyof typeof features];
+  const { title, lead, View } = features[feature as keyof typeof features];
   return (
     <main className="mob-site mob-page" id="main-content">
-      <header className="mob-page-header">
+      <header className="mob-page-header" data-reveal>
         <h1>{mobilityText(locale, title)}</h1>
+        <p className="mob-page-lead">{mobilityText(locale, lead)}</p>
       </header>
       <View locale={locale} />
     </main>

@@ -174,7 +174,7 @@ export function PersonalSpace({ locale }: { locale: Locale }) {
         !feedback && <p role="status">{t("checking")}</p>
       ) : (
         <div className="mob-personal-grid">
-          <section className="mob-card">
+          <section className="mob-card" data-reveal>
             <h2>{t("saved")}</h2>
             {active && (
               <Link
@@ -275,7 +275,7 @@ export function PersonalSpace({ locale }: { locale: Locale }) {
               </div>
             )}
           </section>
-          <section className="mob-card">
+          <section className="mob-card" data-reveal>
             <h2>{t("favourites")}</h2>
             <div className="mob-inline">
               <StationPicker
@@ -325,7 +325,7 @@ export function PersonalSpace({ locale }: { locale: Locale }) {
               </ul>
             )}
           </section>
-          <section className="mob-card" id="mobility-notifications">
+          <section className="mob-card" id="mobility-notifications" data-reveal>
             <div className="mob-section-heading">
               <h2>
                 {t("notifications")}{" "}
@@ -380,7 +380,7 @@ export function PersonalSpace({ locale }: { locale: Locale }) {
               </ul>
             )}
           </section>
-          <section className="mob-card">
+          <section className="mob-card" data-reveal>
             <h2>{t("settings")}</h2>
             <PreferencesForm
               locale={locale}
@@ -396,7 +396,7 @@ export function PersonalSpace({ locale }: { locale: Locale }) {
               }}
             />
           </section>
-          <section className="mob-card">
+          <section className="mob-card" data-reveal>
             <h2>{t("reports")}</h2>
             {!space.reports.length ? (
               empty
@@ -417,7 +417,7 @@ export function PersonalSpace({ locale }: { locale: Locale }) {
               </ul>
             )}
           </section>
-          <section className="mob-card">
+          <section className="mob-card" data-reveal>
             <h2>{t("history")}</h2>
             {!space.history.length ? (
               empty
