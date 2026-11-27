@@ -16,15 +16,15 @@ const quickKeys: ChatQuickKey[] = ["itinerary", "fares", "complaint"];
 
 const quickQueries: Record<Locale, Record<InfoQuickKey, string>> = {
   fr: {
-    itinerary: "Quel est le dernier tram de la ligne 1 ?",
+    itinerary: "Quels sont les horaires du service ?",
     fares: "Quel est le tarif du ticket et de l'abonnement étudiant ?",
   },
   ar: {
-    itinerary: "ما هو آخر ترام على الخط 1؟",
+    itinerary: "ما هي مواعيد الخدمة؟",
     fares: "ما هو ثمن التذكرة والاشتراك الطلابي؟",
   },
   en: {
-    itinerary: "What is the last tram on line 1?",
+    itinerary: "What are the service hours?",
     fares: "What is the ticket and student pass fare?",
   },
 };
