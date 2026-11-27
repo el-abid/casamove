@@ -3,6 +3,7 @@ import { isGraphInterrupt } from "@langchain/langgraph";
 import type { NextRequest } from "next/server";
 
 import { isLocale, type Locale } from "@/content/dictionary";
+import { isProviderId } from "@/content/providers";
 import { getCurrentUser, isAdmin } from "@/lib/auth/session";
 import { agentTexts, getGraph } from "@/lib/agent/graph";
 import { addTicketMessage, getTicket } from "@/lib/agent/tickets";
@@ -16,6 +17,7 @@ type GraphValues = {
   sources?: { id: string; title: string; source: string }[];
   ticket?: Ticket | null;
   intent?: string;
+  requiresSignIn?: boolean;
 };
 
 const encoder = new TextEncoder();
@@ -56,6 +58,11 @@ export async function POST(request: NextRequest) {
     typeof body?.locale === "string" && isLocale(body.locale)
       ? body.locale
       : "fr";
+
+  const provider =
+    typeof body?.provider === "string" && isProviderId(body.provider)
+      ? body.provider
+      : "tram";
 
   const intentHint =
     body?.intentHint === "complaint" ? ("complaint" as const) : null;
@@ -124,7 +131,7 @@ export async function POST(request: NextRequest) {
       };
 
       try {
-        send("meta", { sessionId, locale });
+        send("meta", { sessionId, locale, provider });
 
         if (directReply) {
           for (const chunk of chunkText(directReply)) {
@@ -146,6 +153,7 @@ export async function POST(request: NextRequest) {
             {
               query: message,
               locale,
+              provider,
               sessionId: threadId,
               userId: currentUser?.id ?? null,
               intentHint,
@@ -170,6 +178,12 @@ export async function POST(request: NextRequest) {
 
         if (values.sources?.length) {
           send("sources", { sources: values.sources });
+        }
+
+        if (values.requiresSignIn) {
+          send("signin", {
+            url: `/login?next=${encodeURIComponent(`/${locale}/${provider}`)}`,
+          });
         }
 
         if (values.ticket) {

@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 
-export function LoginForm({ denied }: { denied: boolean }) {
+export function LoginForm({
+  denied,
+  next,
+}: {
+  denied: boolean;
+  next?: string | null;
+}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(
@@ -21,7 +27,7 @@ export function LoginForm({ denied }: { denied: boolean }) {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, next }),
       });
 
       const data = (await response.json()) as {

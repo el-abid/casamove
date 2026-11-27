@@ -1,4 +1,5 @@
 import type { Locale } from "@/content/dictionary";
+import type { ProviderId } from "@/content/providers";
 import { ensureDb, pool } from "@/lib/db";
 import { lineOfQuery } from "./classification";
 import type {
@@ -23,6 +24,7 @@ type TicketRow = {
   priority: Priority;
   theme: string;
   sentiment: TicketSentiment;
+  provider: string | null;
   line: string | null;
   locale: Locale;
   thread_id: string;
@@ -45,6 +47,7 @@ function mapRow(row: TicketRow): Ticket {
     priority: row.priority,
     theme: row.theme,
     sentiment: row.sentiment,
+    provider: (row.provider ?? "tram") as ProviderId,
     line: row.line ?? null,
     locale: row.locale,
     threadId: row.thread_id,
@@ -67,6 +70,7 @@ export async function createTicket(input: {
   priority: Priority;
   theme: string;
   sentiment: TicketSentiment;
+  provider?: ProviderId;
   line?: string | null;
   locale: Locale;
   threadId: string;
@@ -95,12 +99,12 @@ export async function createTicket(input: {
 
   const { rows } = await pool.query<TicketRow>(
     `INSERT INTO tickets
-       (number, priority, theme, sentiment, line, locale, thread_id, user_query, draft, sla_deadline, user_id)
+       (number, priority, theme, sentiment, line, locale, thread_id, user_query, draft, sla_deadline, user_id, provider)
      VALUES (
        format('CM-%s-%s', $1::int, lpad(nextval('ticket_number_seq')::text, 6, '0')),
        $2, $3, $4, $5, $6, $7, $8, $9,
        now() + ($10::int * interval '1 hour'),
-       $11
+       $11, $12
      )
      RETURNING *`,
     [
@@ -115,6 +119,7 @@ export async function createTicket(input: {
       input.draft,
       SLA_HOURS[input.priority],
       input.userId ?? null,
+      input.provider ?? "tram",
     ]
   );
 

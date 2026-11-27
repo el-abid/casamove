@@ -19,7 +19,30 @@ const nextConfig = {
     ];
   },
   async redirects() {
-    return [{ source: "/", destination: "/fr", permanent: false }];
+    const locales = ["fr", "ar", "en"];
+    const legacy = [
+      "journey",
+      "network",
+      "traffic",
+      "reports",
+      "assistance",
+    ];
+
+    return [
+      { source: "/", destination: "/fr", permanent: false },
+      ...locales.flatMap((locale) =>
+        legacy.map((path) => ({
+          source: `/${locale}/${path}`,
+          destination: `/${locale}/tram/${path}`,
+          permanent: false,
+        }))
+      ),
+      ...locales.map((locale) => ({
+        source: `/${locale}/tram/account`,
+        destination: `/${locale}/account`,
+        permanent: false,
+      })),
+    ];
   },
 };
 

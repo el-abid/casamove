@@ -19,6 +19,12 @@ export async function POST(request: NextRequest) {
   const email =
     typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
   const password = typeof body?.password === "string" ? body.password : "";
+  const next =
+    typeof body?.next === "string" &&
+    body.next.startsWith("/") &&
+    !body.next.startsWith("//")
+      ? body.next
+      : "/fr";
 
   if (!email || !password) {
     return Response.json({ error: "missing_credentials" }, { status: 400 });
@@ -41,6 +47,6 @@ export async function POST(request: NextRequest) {
   return Response.json({
     ok: true,
     role: user.role,
-    redirect: user.role === "admin" ? "/admin" : "/fr/account",
+    redirect: user.role === "admin" ? "/admin" : next,
   });
 }

@@ -4,14 +4,10 @@ import { notFound } from "next/navigation";
 import "../../globals.css";
 import "@/components/mobility/mobility.css";
 
-import { ChatWidget } from "@/components/chat/ChatWidget";
 import { Pwa } from "@/components/mobility/Pwa";
-import { Footer } from "@/components/site/Footer";
-import { Header } from "@/components/site/Header";
 import { Reveal } from "@/components/ui/Reveal";
 import { dictionary, dirs, isLocale, locales } from "@/content/dictionary";
 import { mobilityText } from "@/content/mobility";
-import { getCurrentUser } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
@@ -55,9 +51,6 @@ export default async function LocaleLayout({
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  const dict = dictionary[locale];
-  const user = await getCurrentUser();
-
   return (
     <html lang={locale} dir={dirs[locale]}>
       <body className="mob-passenger">
@@ -67,10 +60,7 @@ export default async function LocaleLayout({
         <a className="mob-skip" href="#main-content">
           {mobilityText(locale, "skip")}
         </a>
-        <Header dict={dict} locale={locale} signedIn={Boolean(user)} />
         {children}
-        <Footer dict={dict} locale={locale} />
-        <ChatWidget key={locale} dict={dict} locale={locale} />
         <Pwa />
         <Reveal />
       </body>

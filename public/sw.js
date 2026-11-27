@@ -1,9 +1,10 @@
-const CACHE = "casamove-public-2026-11-26.1";
+const CACHE = "casamove-public-2026-11-27.1";
 const LOCALES = ["fr", "ar", "en"];
 const SHELLS = LOCALES.flatMap((locale) => [
   `/${locale}`,
-  `/${locale}/journey`,
-  `/${locale}/network`,
+  `/${locale}/tram`,
+  `/${locale}/tram/journey`,
+  `/${locale}/tram/network`,
 ]);
 const NETWORK = "/api/mobility/network";
 const OFFLINE = "/offline.html";

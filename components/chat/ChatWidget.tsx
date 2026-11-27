@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ChatQuickKey, Dict, Locale } from "@/content/dictionary";
+import { alsaText } from "@/content/alsa";
+import { mobilityText } from "@/content/mobility";
+import { useProviderScope } from "@/components/providers/ProviderContext";
 import { ChatLauncher } from "./ChatLauncher";
 import { ChatMessage } from "./ChatMessage";
 import type {
@@ -29,10 +32,89 @@ const quickQueries: Record<Locale, Record<InfoQuickKey, string>> = {
   },
 };
 
-export function ChatWidget({ dict, locale }: { dict: Dict; locale: Locale }) {
+const busQuickQueries: Record<Locale, Record<InfoQuickKey, string>> = {
+  fr: {
+    itinerary: "Quelles lignes desservent Sidi Maarouf ?",
+    fares: "Quelle ligne va à l'aéroport Mohammed V ?",
+  },
+  ar: {
+    itinerary: "ما هي الخطوط التي تخدم سيدي معروف؟",
+    fares: "أي خط يذهب إلى مطار محمد الخامس؟",
+  },
+  en: {
+    itinerary: "Which lines serve Sidi Maarouf?",
+    fares: "Which line goes to Mohammed V airport?",
+  },
+};
+
+export function ChatWidget({
+  dict,
+  locale,
+  general = false,
+}: {
+  dict: Dict;
+  locale: Locale;
+  general?: boolean;
+}) {
+  const { id: provider } = useProviderScope(locale);
+  const isBus = provider === "bus";
+  const isGeneral = general;
+  const greeting = isGeneral
+    ? locale === "ar"
+      ? "مرحبًا، أنا المساعد العام للتنقل. أستطيع حساب مسار بين الطرامواي والحافلة والقطار."
+      : locale === "en"
+        ? "Hello, I am the intermodal assistant. I can plan a route across tram, bus and train."
+        : "Bonjour, je suis l’assistant intermodal. Je peux planifier un trajet entre tram, bus et train."
+    : isBus
+      ? alsaText(locale, "chatGreeting")
+      : dict.chat.greeting;
+  const title = isGeneral
+    ? locale === "ar"
+      ? "المساعد العام"
+      : locale === "en"
+        ? "Intermodal assistant"
+        : "Assistant intermodal"
+    : isBus
+      ? alsaText(locale, "chatTitle")
+      : dict.chat.title;
+  const quickLabels = isGeneral
+    ? {
+        itinerary:
+          locale === "ar" ? "المسار" : locale === "en" ? "Route" : "Itinéraire",
+        fares: locale === "ar" ? "الرباط" : "Rabat",
+        complaint:
+          locale === "ar" ? "مساعدة" : locale === "en" ? "Help" : "Aide",
+      }
+    : isBus
+      ? {
+          itinerary: alsaText(locale, "chatLines"),
+          fares: alsaText(locale, "chatAirport"),
+          complaint: alsaText(locale, "chatComplaint"),
+        }
+      : dict.chat.quick;
+  const generalQueries: Record<Locale, Record<InfoQuickKey, string>> = {
+    fr: {
+      itinerary: "Comment aller de Casa Port à l'aéroport Mohammed V ?",
+      fares: "Comment aller de Casa Voyageurs à Rabat ?",
+    },
+    ar: {
+      itinerary: "كيف أذهب من ميناء الدار البيضاء إلى مطار محمد الخامس؟",
+      fares: "كيف أذهب من Casa Voyageurs إلى الرباط؟",
+    },
+    en: {
+      itinerary: "How do I get from Casa Port to Mohammed V airport?",
+      fares: "How do I get from Casa Voyageurs to Rabat?",
+    },
+  };
+  const quickQueriesFor = isGeneral
+    ? generalQueries
+    : isBus
+      ? busQuickQueries
+      : quickQueries;
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [signInUrl, setSignInUrl] = useState<string>();
   const [typing, setTyping] = useState(false);
   const [busy, setBusy] = useState(false);
   const [complaintMode, setComplaintMode] = useState(false);
@@ -292,7 +374,7 @@ export function ChatWidget({ dict, locale }: { dict: Dict; locale: Locale }) {
     setOpen(true);
     if (!messages.some((message) => message.text.trim().length > 0)) {
       setMessages((list) => [
-        { id: idRef.current++, role: "bot", text: dict.chat.greeting },
+        { id: idRef.current++, role: "bot", text: greeting },
         ...list,
       ]);
     }
@@ -307,6 +389,7 @@ export function ChatWidget({ dict, locale }: { dict: Dict; locale: Locale }) {
     const query = (payload ?? display).trim();
     if (!label || !query || busy) return;
 
+    setSignInUrl(undefined);
     setBusy(true);
     setTyping(true);
     setInput("");
@@ -338,6 +421,11 @@ export function ChatWidget({ dict, locale }: { dict: Dict; locale: Locale }) {
     function handleEvent(event: string, data: Record<string, unknown>) {
       if (event === "token") {
         ensureBot(String(data.text ?? ""));
+        return;
+      }
+
+      if (event === "signin") {
+        setSignInUrl(String(data.url ?? "/login"));
         return;
       }
 
@@ -401,17 +489,29 @@ export function ChatWidget({ dict, locale }: { dict: Dict; locale: Locale }) {
     }
 
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: query,
-          locale,
-          sessionId: sessionRef.current || "anonymous-session",
-          ticketNumber: activeTicket?.number,
-          intentHint,
-        }),
-      });
+      const response = await fetch(
+        isGeneral ? "/api/chat/general" : "/api/chat",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            isGeneral
+              ? {
+                  message: query,
+                  locale,
+                  sessionId: sessionRef.current || "anonymous-session",
+                }
+              : {
+                  message: query,
+                  locale,
+                  provider,
+                  sessionId: sessionRef.current || "anonymous-session",
+                  ticketNumber: activeTicket?.number,
+                  intentHint,
+                }
+          ),
+        }
+      );
 
       if (!response.ok || !response.body) {
         throw new Error(`HTTP ${response.status}`);
@@ -475,7 +575,7 @@ export function ChatWidget({ dict, locale }: { dict: Dict; locale: Locale }) {
   function handleQuick(key: ChatQuickKey) {
     if (busy) return;
 
-    if (key === "complaint") {
+    if (key === "complaint" && !isGeneral) {
       setComplaintMode(true);
       setMessages((list) => [
         ...list,
@@ -484,7 +584,22 @@ export function ChatWidget({ dict, locale }: { dict: Dict; locale: Locale }) {
       return;
     }
 
-    send(dict.chat.quick[key], quickQueries[locale][key]);
+    if (isGeneral) {
+      const helpQuery =
+        locale === "ar"
+          ? "ماذا يمكنك أن تفعل؟"
+          : locale === "en"
+            ? "What can you do?"
+            : "Que pouvez-vous faire ?";
+      send(
+        quickLabels[key],
+        key === "complaint" ? helpQuery : quickQueriesFor[locale][key]
+      );
+      return;
+    }
+
+    if (key === "complaint") return;
+    send(quickLabels[key], quickQueriesFor[locale][key]);
   }
 
   if (!open) {
@@ -492,13 +607,13 @@ export function ChatWidget({ dict, locale }: { dict: Dict; locale: Locale }) {
   }
 
   return (
-    <section className="chat" aria-label={dict.chat.title}>
+    <section className="chat" aria-label={title}>
       <header className="chat__head">
         <div className="chat__avatar" aria-hidden>
-          CM
+          {isGeneral ? "MI" : isBus ? "CB" : "CM"}
         </div>
         <div>
-          <div className="chat__title">{dict.chat.title}</div>
+          <div className="chat__title">{title}</div>
           <div className="chat__status">
             <span className="dot" aria-hidden />
             {dict.chat.status}
@@ -553,10 +668,16 @@ export function ChatWidget({ dict, locale }: { dict: Dict; locale: Locale }) {
               disabled={busy}
               onClick={() => handleQuick(key)}
             >
-              {dict.chat.quick[key]}
+              {quickLabels[key]}
             </button>
           ))}
         </div>
+
+        {signInUrl ? (
+          <a className="chat__signin" href={signInUrl}>
+            {mobilityText(locale, "signIn")}
+          </a>
+        ) : null}
       </div>
 
       <div className="chat__foot">{dict.chat.foot}</div>

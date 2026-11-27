@@ -40,6 +40,7 @@ export function AdminConsole({ initialTickets }: { initialTickets: Ticket[] }) {
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
+  const [providerFilter, setProviderFilter] = useState("all");
   const [localeFilter, setLocaleFilter] = useState("all");
   const [themeFilter, setThemeFilter] = useState("all");
   const [lineFilter, setLineFilter] = useState("all");
@@ -61,6 +62,9 @@ export function AdminConsole({ initialTickets }: { initialTickets: Ticket[] }) {
       if (statusFilter !== "all" && ticket.status !== statusFilter)
         return false;
       if (priorityFilter !== "all" && ticket.priority !== priorityFilter) {
+        return false;
+      }
+      if (providerFilter !== "all" && ticket.provider !== providerFilter) {
         return false;
       }
       if (localeFilter !== "all" && ticket.locale !== localeFilter) {
@@ -91,6 +95,7 @@ export function AdminConsole({ initialTickets }: { initialTickets: Ticket[] }) {
     tickets,
     statusFilter,
     priorityFilter,
+    providerFilter,
     localeFilter,
     themeFilter,
     lineFilter,
@@ -142,6 +147,7 @@ export function AdminConsole({ initialTickets }: { initialTickets: Ticket[] }) {
     search,
     status: statusFilter,
     priority: priorityFilter,
+    provider: providerFilter,
     locale: localeFilter,
     theme: themeFilter,
     line: lineFilter,
@@ -152,6 +158,7 @@ export function AdminConsole({ initialTickets }: { initialTickets: Ticket[] }) {
     if (patch.search !== undefined) setSearch(patch.search);
     if (patch.status !== undefined) setStatusFilter(patch.status);
     if (patch.priority !== undefined) setPriorityFilter(patch.priority);
+    if (patch.provider !== undefined) setProviderFilter(patch.provider);
     if (patch.locale !== undefined) setLocaleFilter(patch.locale);
     if (patch.theme !== undefined) setThemeFilter(patch.theme);
     if (patch.line !== undefined) setLineFilter(patch.line);
@@ -541,6 +548,7 @@ export function AdminConsole({ initialTickets }: { initialTickets: Ticket[] }) {
             setPeriodFilter(period);
             setStatusFilter("all");
             setPriorityFilter("all");
+            setProviderFilter("all");
             setLocaleFilter("all");
             setSearch("");
             setTab("queue");
@@ -552,6 +560,7 @@ export function AdminConsole({ initialTickets }: { initialTickets: Ticket[] }) {
             setPeriodFilter(period);
             setStatusFilter("all");
             setPriorityFilter("all");
+            setProviderFilter("all");
             setLocaleFilter("all");
             setSearch("");
             setTab("queue");

@@ -3,14 +3,14 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "CasaMove · Casablanca",
-    short_name: "CasaMove",
-    description: "Itinéraires tramway et busway à Casablanca",
+    name: "Mobility Maroc",
+    short_name: "Mobility",
+    description: "Tous vos transports au Maroc, un seul point d'entrée",
     start_url: "/fr",
     scope: "/",
     display: "standalone",
-    background_color: "#f3f6fa",
-    theme_color: "#142a42",
+    background_color: "#f6f3ec",
+    theme_color: "#0b1728",
     icons: [
       {
         src: "/casamove-192.png",
@@ -32,8 +32,8 @@ export default function manifest(): MetadataRoute.Manifest {
       },
     ],
     shortcuts: [
-      { name: "Itinéraires", url: "/fr/journey" },
-      { name: "Réseau", url: "/fr/network" },
+      { name: "Itinéraires", url: "/fr/tram/journey" },
+      { name: "Réseau", url: "/fr/tram/network" },
     ],
   };
 }

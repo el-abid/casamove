@@ -12,6 +12,7 @@ import { connectionString } from "@/lib/db";
 import { chatCompletion, chatJSON, llmEnabled } from "./llm";
 import { executeSupport, planSupport } from "./support";
 import { normalize, type KnowledgeDoc } from "./corpus";
+import type { ProviderId } from "@/content/providers";
 import { retrieveHybrid, routeDocuments } from "./retrieval";
 import {
   createTicket,
@@ -37,6 +38,10 @@ import {
 const AgentState = Annotation.Root({
   query: Annotation<string>(),
   locale: Annotation<Locale>(),
+  provider: Annotation<ProviderId>({
+    reducer: (_current, next) => next,
+    default: () => "tram",
+  }),
   sessionId: Annotation<string>(),
   userId: Annotation<number | null>({
     reducer: (_current, next) => next,
@@ -69,6 +74,10 @@ const AgentState = Annotation.Root({
     reducer: (_current, next) => next,
     default: () => null,
   }),
+  requiresSignIn: Annotation<boolean>({
+    reducer: (_current, next) => next,
+    default: () => false,
+  }),
   decision: Annotation<HitlDecision | null>({
     reducer: (_current, next) => next,
     default: () => null,
@@ -92,6 +101,11 @@ const texts = {
     fr: "Décrivez le problème, la ligne et la date. Je crée le dossier dès que j'ai ces éléments.",
     ar: "صف المشكلة والخط والتاريخ. سأفتح الملف بمجرد توفر هذه العناصر.",
     en: "Describe the issue, the line and the date. I will open the case as soon as I have them.",
+  },
+  signIn: {
+    fr: "Pour déposer une réclamation, connectez-vous à votre compte. Vos dossiers seront ensuite suivis dans votre espace personnel.",
+    ar: "لتقديم شكاية، سجّل الدخول إلى حسابك. ستتم متابعة ملفاتك بعد ذلك في مساحتك الشخصية.",
+    en: "To file a complaint, sign in to your account. Your cases will then be tracked in your personal space.",
   },
   draft: {
     fr: (query: string, number: string) =>
@@ -138,7 +152,7 @@ function classify(query: string): { intent: Intent; confidence: number } {
 
   const short = q.split(" ").length <= 6;
   const smallTalk =
-    /(bonjour|bonsoir|salut|hello|hi|hey|merci|au revoir|bye|qui es-tu|tu es qui|t'es qui|que peux-tu|comment vas-tu|مرحبا|أهلا|شكرا|من أنت)/.test(
+    /(bonjour|bonsoir|salut|hello|hi|hey|merci|au revoir|bye|qui es-tu|tu es qui|t'es qui|que peux-tu|comment vas-tu|comment tu peux m aider|tu peux m aider|que peux tu faire|qu est ce que tu peux faire|how can you help|what can you do|help me|aide moi|مرحبا|أهلا|شكرا|من أنت)/.test(
       q
     );
   const status =
@@ -275,6 +289,7 @@ async function answerFromDocs(state: AgentStateType, docs: KnowledgeDoc[]) {
         {
           role: "system",
           content: `Tu es l'agent Knowledge d'un service client de transport à Casablanca.
+Opérateur : ${state.provider === "bus" ? "Casabus / ALSA" : "CasaMove"}.
 Réponds uniquement à partir des documents fournis, en trois phrases maximum, dans la langue de la question.
 Si la question demande une liste, tous les tarifs, tous les horaires ou toutes les lignes, reprends tous les éléments présents dans le document.
 N'utilise que les faits explicitement présents dans les documents.
@@ -322,14 +337,20 @@ function isYesNoQuestion(query: string): boolean {
 
 async function knowledge(state: AgentStateType) {
   if (llmEnabled()) {
-    const routing = await routeDocuments(state.query, state.locale);
+    const routing = await routeDocuments(
+      state.query,
+      state.locale,
+      state.provider
+    );
 
     if (routing.status === "selected") {
       return answerFromDocs(state, routing.docs);
     }
 
     if (routing.status === "none") {
-      const retrieval = await retrieveHybrid(state.query, state.locale);
+      const retrieval = await retrieveHybrid(state.query, state.locale, {
+        provider: state.provider,
+      });
       const strongLexical = (retrieval.hits[0]?.lexicalScore ?? 0) >= 4;
 
       if (strongLexical && isYesNoQuestion(state.query)) {
@@ -340,7 +361,9 @@ async function knowledge(state: AgentStateType) {
     }
   }
 
-  const retrieval = await retrieveHybrid(state.query, state.locale);
+  const retrieval = await retrieveHybrid(state.query, state.locale, {
+    provider: state.provider,
+  });
 
   if (retrieval.hits.length === 0) {
     let reply: string = texts.fallback[state.locale];
@@ -381,17 +404,85 @@ N'invente aucun fait sur le réseau, les horaires ou les tarifs.`,
   return answerFromDocs(state, contextDocs);
 }
 
+const PERSONAS: Record<
+  ProviderId,
+  { name: string; scope: string; topics: string; avoid: string }
+> = {
+  tram: {
+    name: "CasaMove",
+    scope: "du réseau de tramway et busway de Casablanca",
+    topics:
+      "les horaires, les tarifs, les correspondances, les abonnements, les réclamations et le suivi de dossier",
+    avoid:
+      "Tu ne parles pas des bus Casabus, des trains ONCF, des aéroports ni des ports.",
+  },
+  bus: {
+    name: "Casabus",
+    scope:
+      "du réseau de bus de Casablanca et Mohammedia, opéré par ALSA Al Baida",
+    topics:
+      "les lignes, les arrêts, les horaires et fréquences, la ligne de l'aéroport Mohammed V, les objets perdus, les agences, les réclamations et le suivi de dossier",
+    avoid:
+      "Tu ne parles pas du tramway, du busway CasaMove, des trains ONCF, des aéroports en dehors de la ligne de bus, ni des ports.",
+  },
+  train: {
+    name: "ONCF",
+    scope: "du réseau ferroviaire national",
+    topics:
+      "les lignes, les gares, les horaires, les correspondances et les réclamations",
+    avoid: "Tu ne parles pas des bus, du tramway ni des ports.",
+  },
+  air: {
+    name: "Aéroports du Maroc",
+    scope: "des aéroports et des vols du Royaume",
+    topics: "les aéroports, les vols, les correspondances et l'assistance",
+    avoid: "Tu ne parles pas des bus, du tramway ni des ports.",
+  },
+  port: {
+    name: "Ports du Maroc",
+    scope: "des ports et des traversées maritimes",
+    topics: "les ports, les traversées, les accès voyageurs et l'assistance",
+    avoid: "Tu ne parles pas des bus, du tramway ni des aéroports.",
+  },
+};
+
+const GREETINGS: Record<ProviderId, Record<Locale, string>> = {
+  tram: texts.greeting,
+  bus: {
+    fr: "Bonjour, je suis l'assistant Casabus. Je peux vous aider sur les lignes de bus, les arrêts, les horaires, la ligne de l'aéroport Mohammed V, les objets perdus ou une réclamation.",
+    ar: "مرحبًا، أنا مساعد كازابوس. يمكنني مساعدتك في خطوط الحافلات والمحطات والمواعيد وخط المطار والأغراض المفقودة أو الشكايات.",
+    en: "Hello, I am the Casabus assistant. I can help with bus lines, stops, schedules, the Mohammed V airport line, lost items or a complaint.",
+  },
+  train: {
+    fr: "Bonjour, je suis l'assistant ONCF. Je peux vous aider sur les lignes, les gares, les horaires et les correspondances ferroviaires.",
+    ar: "مرحبًا، أنا مساعد ONCF. يمكنني مساعدتك في الخطوط والمحطات والمواعيد والتحويلات السككية.",
+    en: "Hello, I am the ONCF assistant. I can help with rail lines, stations, schedules and connections.",
+  },
+  air: {
+    fr: "Bonjour, je suis l'assistant Aéroports du Maroc. Je peux vous aider sur les aéroports, les vols et les correspondances.",
+    ar: "مرحبًا، أنا مساعد مطارات المغرب. يمكنني مساعدتك في المطارات والرحلات والتحويلات.",
+    en: "Hello, I am the Morocco Airports assistant. I can help with airports, flights and connections.",
+  },
+  port: {
+    fr: "Bonjour, je suis l'assistant Ports du Maroc. Je peux vous aider sur les ports, les traversées et les accès voyageurs.",
+    ar: "مرحبًا، أنا مساعد موانئ المغرب. يمكنني مساعدتك في الموانئ والرحلات البحرية ومداخل المسافرين.",
+    en: "Hello, I am the Morocco Ports assistant. I can help with ports, crossings and passenger access.",
+  },
+};
+
 async function conversation(state: AgentStateType) {
-  let reply: string = texts.greeting[state.locale];
+  const persona = PERSONAS[state.provider] ?? PERSONAS.tram;
+  let reply: string = GREETINGS[state.provider]?.[state.locale] ?? texts.greeting[state.locale];
 
   if (llmEnabled()) {
     const generated = await chatCompletion(
       [
         {
           role: "system",
-          content: `Tu es l'assistant CasaMove, le service client du réseau de tramway et busway de Casablanca.
+          content: `Tu es l'assistant ${persona.name}, le service client ${persona.scope}.
 Tu réponds dans la langue de l'usager : français, arabe ou anglais.
-Tu peux aider sur les horaires, les tarifs, les correspondances, les abonnements, les réclamations et le suivi de dossier.
+Tu peux aider sur ${persona.topics}.
+${persona.avoid}
 Tu ne dois jamais inventer un fait sur le réseau. Pour une question factuelle, dis que tu peux vérifier dans le guide ou proposer une réclamation.
 Tu n'es pas un humain. Réponds en deux ou trois phrases, avec un ton naturel et chaleureux.`,
         },
@@ -418,6 +509,14 @@ function hasComplaintDetails(query: string): boolean {
 }
 
 async function complaint(state: AgentStateType) {
+  if (!state.userId) {
+    return {
+      reply: texts.signIn[state.locale],
+      sources: [],
+      requiresSignIn: true,
+    };
+  }
+
   if (!hasComplaintDetails(state.query)) {
     return { reply: texts.intake[state.locale], sources: [] };
   }
@@ -433,6 +532,7 @@ async function complaint(state: AgentStateType) {
     priority,
     theme,
     sentiment,
+    provider: state.provider,
     locale: state.locale,
     threadId: state.sessionId,
     query: state.query,

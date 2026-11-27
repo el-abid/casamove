@@ -1,4 +1,5 @@
 import type { Locale } from "@/content/dictionary";
+import type { ProviderId } from "@/content/providers";
 
 export type Intent =
   "info" | "complaint" | "support" | "conversation" | "unknown";
@@ -21,6 +22,7 @@ export type Ticket = {
   priority: Priority;
   theme: string;
   sentiment: TicketSentiment;
+  provider: ProviderId;
   line: string | null;
   locale: Locale;
   threadId: string;

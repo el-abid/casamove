@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+
 import { JourneyPlanner } from "@/components/mobility/JourneyPlanner";
 import {
   AssistancePage,
@@ -8,6 +9,7 @@ import {
 } from "@/components/mobility/PassengerPages";
 import { isLocale } from "@/content/dictionary";
 import { mobilityText } from "@/content/mobility";
+import { getProvider } from "@/content/providers";
 
 const features = {
   journey: { title: "journey", lead: "journeyLead", View: JourneyPlanner },
@@ -17,17 +19,20 @@ const features = {
   assistance: { title: "help", lead: "helpLead", View: AssistancePage },
 } as const;
 
-export function generateStaticParams() {
-  return Object.keys(features).map((feature) => ({ feature }));
-}
+export const dynamic = "force-dynamic";
 
 export default async function MobilityPage({
   params,
 }: {
-  params: Promise<{ locale: string; feature: string }>;
+  params: Promise<{ locale: string; provider: string; feature: string }>;
 }) {
-  const { locale, feature } = await params;
-  if (!isLocale(locale) || !Object.hasOwn(features, feature)) notFound();
+  const { locale, provider, feature } = await params;
+  if (!isLocale(locale)) notFound();
+
+  const config = getProvider(provider);
+  if (!config || config.status !== "live" || config.id !== "tram") notFound();
+  if (!Object.hasOwn(features, feature)) notFound();
+
   const { title, lead, View } = features[feature as keyof typeof features];
   return (
     <main className="mob-site mob-page" id="main-content">

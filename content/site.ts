@@ -17,7 +17,15 @@ export const navItems: { key: NavKey; href: string }[] = [
   { key: "contact", href: "#contact" },
 ];
 
-export type IconKey = "tram" | "map" | "shop" | "chat";
+export type IconKey =
+  | "tram"
+  | "bus"
+  | "train"
+  | "plane"
+  | "ship"
+  | "map"
+  | "shop"
+  | "chat";
 
 export const tiles: { key: TileKey; icon: IconKey; href: string }[] = [
   { key: "lines", icon: "tram", href: "#lignes" },

@@ -24,6 +24,44 @@ export function Icon({ name, size = 20 }: { name: IconKey; size?: number }) {
     );
   }
 
+  if (name === "bus") {
+    return (
+      <svg {...common}>
+        <rect x="4" y="4" width="16" height="14" rx="3" />
+        <path d="M4 11h16M8 18v2M16 18v2M8 8h8" />
+        <circle cx="8" cy="14.5" r="1" />
+        <circle cx="16" cy="14.5" r="1" />
+      </svg>
+    );
+  }
+
+  if (name === "train") {
+    return (
+      <svg {...common}>
+        <rect x="5" y="3" width="14" height="13" rx="3" />
+        <path d="M5 10h14M9 16l-2 4M15 16l2 4M8 6h8" />
+        <circle cx="9" cy="13" r="1" />
+        <circle cx="15" cy="13" r="1" />
+      </svg>
+    );
+  }
+
+  if (name === "plane") {
+    return (
+      <svg {...common}>
+        <path d="M10.5 13.5 3 10l2-2 6 1 4-4 2-1 1 1-1 2-4 4 1 6-2 2-3.5-7.5Z" />
+      </svg>
+    );
+  }
+
+  if (name === "ship") {
+    return (
+      <svg {...common}>
+        <path d="M4 15h16l-2 5H6l-2-5ZM6 15V9h12v6M12 9V4M9 6h6" />
+      </svg>
+    );
+  }
+
   if (name === "map") {
     return (
       <svg {...common}>

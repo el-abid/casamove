@@ -10,6 +10,9 @@ import {
   type Locale,
 } from "@/content/dictionary";
 import { mobilityText } from "@/content/mobility";
+import { portalText } from "@/content/portal";
+import { useProviderScope } from "@/components/providers/ProviderContext";
+import { BrandMark } from "./BrandMark";
 import { LogoutButton } from "./LogoutButton";
 
 const navigation = [
@@ -26,28 +29,38 @@ export function Header({
   dict,
   locale,
   signedIn,
+  brand,
+  accent,
+  nav = "full",
 }: {
   dict: Dict;
   locale: Locale;
   signedIn: boolean;
+  brand: string;
+  accent: string;
+  nav?: "full" | "portal";
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const links = signedIn
-    ? navigation
-    : navigation.filter(([, label]) => label !== "space");
-  const rest = pathname.replace(/^\/(fr|ar|en)(?=\/|$)/, "");
+  const { id: provider, base } = useProviderScope(locale);
+  const links =
+    nav === "full"
+      ? signedIn
+        ? navigation
+        : navigation.filter(([, label]) => label !== "space")
+      : ([["", "portal"]] as const);
+  const rest = pathname.startsWith(base) ? pathname.slice(base.length) : "";
 
   return (
     <header className="site-header">
       <div className="container site-header__inner">
         <Link
-          href={`/${locale}`}
+          href={base}
           className="brand"
-          aria-label={`CasaMove, ${dict.meta.title}`}
+          aria-label={brand}
         >
-          <span className="brand__mark" aria-hidden />
-          CasaMove
+          <BrandMark provider={provider} brand={brand} accent={accent} />
+          {brand}
         </Link>
 
         <nav
@@ -55,28 +68,34 @@ export function Header({
           className={open ? "nav nav--open" : "nav"}
           aria-label={dict.a11y.menu}
         >
-          {links.map(([path, label]) => (
-            <a
-              key={label}
-              href={`/${locale}${path}`}
-              className={
-                pathname === `/${locale}${path}` ? "is-active" : undefined
-              }
-              aria-current={
-                pathname === `/${locale}${path}` ? "page" : undefined
-              }
-              onClick={() => setOpen(false)}
-            >
-              {mobilityText(locale, label)}
-            </a>
-          ))}
+          {links.map(([path, label]) => {
+            const href =
+              label === "space"
+                ? `/${locale}/account`
+                : nav === "full"
+                  ? `${base}${path}`
+                  : `/${locale}${path}`;
+            return (
+              <a
+                key={label}
+                href={href}
+                className={pathname === href ? "is-active" : undefined}
+                aria-current={pathname === href ? "page" : undefined}
+                onClick={() => setOpen(false)}
+              >
+                {label === "portal"
+                  ? portalText(locale, "portal")
+                  : mobilityText(locale, label)}
+              </a>
+            );
+          })}
 
           <div className="nav__extras">
             <div className="lang" aria-label={dict.a11y.language}>
               {locales.map((item) => (
                 <Link
                   key={item}
-                  href={`/${item}${rest}`}
+                  href={`/${item}/${provider}${rest}`}
                   hrefLang={item}
                   aria-current={item === locale ? "true" : undefined}
                   onClick={() => setOpen(false)}
@@ -89,7 +108,7 @@ export function Header({
               {signedIn ? (
                 <LogoutButton
                   label={dict.account.logout}
-                  redirectTo={`/${locale}`}
+                  redirectTo={base}
                   className="nav__logout"
                 />
               ) : (

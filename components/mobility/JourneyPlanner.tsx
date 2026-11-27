@@ -9,6 +9,7 @@ import {
   type MobilityLabel,
 } from "@/content/mobility";
 import { Icon } from "@/components/ui/Icon";
+import { useProviderScope } from "@/components/providers/ProviderContext";
 import {
   lines,
   network,
@@ -89,13 +90,13 @@ function remaining(journey: Journey, current: string): Journey {
   };
 }
 
-function itineraryPath(locale: Locale, input: PlanInput) {
+function itineraryPath(base: string, input: PlanInput) {
   const query = new URLSearchParams({
     from: input.from,
     to: input.to,
     preference: input.preference,
   });
-  return `/${locale}/journey?${query}`;
+  return `${base}/journey?${query}`;
 }
 
 export function StatusPanel({
@@ -232,6 +233,7 @@ export function RouteTimeline({
 
 function SaveJourney({ locale, input }: { locale: Locale; input: PlanInput }) {
   const t = (label: MobilityLabel) => mobilityText(locale, label);
+  const { base: providerBase } = useProviderScope(locale);
   const [feedback, setFeedback] = useState<
     "success" | "failure" | "signInSave" | "serviceOffline"
   >();
@@ -281,7 +283,7 @@ function SaveJourney({ locale, input }: { locale: Locale; input: PlanInput }) {
           {t(feedback)}{" "}
           {feedback === "signInSave" && (
             <Link
-              href={`/login?next=${encodeURIComponent(itineraryPath(locale, input))}`}
+              href={`/login?next=${encodeURIComponent(itineraryPath(providerBase, input))}`}
             >
               {t("signIn")}
             </Link>
@@ -300,6 +302,7 @@ export function JourneyPlanner({
   compact?: boolean;
 }) {
   const t = (label: MobilityLabel) => mobilityText(locale, label);
+  const { base: providerBase } = useProviderScope(locale);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [preference, setPreference] =
@@ -432,7 +435,7 @@ export function JourneyPlanner({
     setRecent(nextRecent);
     storeSession(recentStationsKey, nextRecent);
     if (compact) {
-      window.location.assign(itineraryPath(locale, input));
+      window.location.assign(itineraryPath(providerBase, input));
       return;
     }
     setInitializing(true);
@@ -583,7 +586,7 @@ export function JourneyPlanner({
         {compact && (
           <Link
             className="mob-example"
-            href={itineraryPath(locale, {
+            href={itineraryPath(providerBase, {
               from: "t3-casa-port",
               to: "bw1-sidi-maarouf",
               preference: "fastest",

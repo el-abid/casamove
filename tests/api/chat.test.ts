@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chat } from "../helpers/http";
+import { chat, register, uniqueEmail } from "../helpers/http";
 
 describe("chat et agents", () => {
   it("répond à une question horaire avec la source du guide", async () => {
@@ -35,8 +35,10 @@ describe("chat et agents", () => {
   });
 
   it("crée un ticket pour une réclamation détaillée", async () => {
+    const user = await register(uniqueEmail("chat"));
     const result = await chat(
-      "Je veux signaler une agression sur la ligne 1 hier soir"
+      "Je veux signaler une agression sur la ligne 1 hier soir",
+      { cookie: user.cookie }
     );
     expect(result.reply).toContain("enregistrée");
     expect(result.ticket).toBeDefined();
@@ -44,34 +46,53 @@ describe("chat et agents", () => {
     expect(result.ticket.status).toBe("pending");
   });
 
+  it("demande la connexion pour une réclamation anonyme", async () => {
+    const result = await chat(
+      "Je veux signaler une agression sur la ligne 1 hier soir"
+    );
+    expect(result.reply.toLowerCase()).toContain("connectez");
+    expect(result.ticket).toBeUndefined();
+  });
+
   it("ne bloque pas la conversation après une réclamation", async () => {
+    const user = await register(uniqueEmail("thread"));
     const sessionId = `thread-${Date.now()}`;
     const complaint = await chat(
       "Je veux signaler un retard sur la ligne 1 ce matin",
-      { sessionId }
+      { sessionId, cookie: user.cookie }
     );
     expect(complaint.ticket).toBeDefined();
 
-    const greeting = await chat("bonjour", { sessionId });
+    const greeting = await chat("bonjour", { sessionId, cookie: user.cookie });
     expect(greeting.reply.toLowerCase()).toContain("bonjour");
     expect(greeting.ticket).toBeUndefined();
 
     const status = await chat(
       `Où est mon dossier ${complaint.ticket.number} ?`,
-      { sessionId }
+      { sessionId, cookie: user.cookie }
     );
     expect(status.reply).toContain(complaint.ticket.number);
     expect(status.reply.toLowerCase()).toContain("attente");
   });
 
   it("demande des détails avant de créer un ticket", async () => {
-    const result = await chat("Je veux signaler un problème.");
+    const user = await register(uniqueEmail("details"));
+    const result = await chat("Je veux signaler un problème.", {
+      cookie: user.cookie,
+    });
     expect(result.reply).toContain("Décrivez");
     expect(result.ticket).toBeUndefined();
   });
 
-  it("répond en arabe", async () => {
-    const result = await chat("ما هو ثمن التذكرة؟", { locale: "ar" });
+  it("présente l'assistant Casabus sur le sous-site bus", async () => {
+    const result = await chat("comment tu peux m'aider ?", {
+      provider: "bus",
+    });
+    expect(result.reply.toLowerCase()).toContain("casabus");
+    expect(result.reply.toLowerCase()).toContain("bus");
+  });
+
+  it("répond en arabe", async () => {    const result = await chat("ما هو ثمن التذكرة؟", { locale: "ar" });
     expect(result.reply).toContain("8");
     expect(result.sources[0]?.source ?? "").toContain("دليل");
   });

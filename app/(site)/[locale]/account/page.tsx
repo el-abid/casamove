@@ -1,7 +1,11 @@
+import "@/components/portal/portal.css";
 import { notFound } from "next/navigation";
 
 import { LogoutButton } from "@/components/site/LogoutButton";
 import { PersonalSpace } from "@/components/mobility/PersonalSpace";
+import { PortalFooter } from "@/components/portal/PortalFooter";
+import { PortalHeader } from "@/components/portal/PortalHeader";
+import { ProviderScope } from "@/components/providers/ProviderContext";
 import { dictionary, isLocale } from "@/content/dictionary";
 import { mobilityText } from "@/content/mobility";
 import { listTicketsByUser } from "@/lib/agent/tickets";
@@ -13,6 +17,14 @@ import { requireUser } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
+const providerLabels: Record<string, string> = {
+  tram: "CasaMove",
+  bus: "Casabus",
+  train: "ONCF",
+  air: "Aéroports",
+  port: "Ports",
+};
+
 export default async function AccountPage({
   params,
 }: {
@@ -21,8 +33,9 @@ export default async function AccountPage({
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
+  const base = `/${locale}/account`;
   const dict = dictionary[locale];
-  const user = await requireUser(`/${locale}/account`);
+  const user = await requireUser(base);
   const tickets = await listTicketsByUser(user.id);
   const subscription = await getSubscription(user.id);
   const subscriptionInfo = subscription
@@ -42,16 +55,22 @@ export default async function AccountPage({
   });
 
   return (
-    <main className="section mob-site mob-account" id="main-content">
-      <div className="container account">
-        <header className="account__head" data-reveal>
-          <div>
-            <span className="kicker">{dict.account.title}</span>
-            <h1>{user.fullName}</h1>
-            <p>{dict.account.subtitle}</p>
-          </div>
-          <LogoutButton label={dict.account.logout} redirectTo={`/${locale}`} />
-        </header>
+    <>
+      <PortalHeader
+        locale={locale}
+        signedIn
+        languageLabel={dict.a11y.language}
+      />
+      <main className="section mob-site mob-account" id="main-content">
+        <div className="container account">
+          <header className="account__head" data-reveal>
+            <div>
+              <span className="kicker">{dict.account.title}</span>
+              <h1>{user.fullName}</h1>
+              <p>{dict.account.subtitle}</p>
+            </div>
+            <LogoutButton label={dict.account.logout} redirectTo={`/${locale}`} />
+          </header>
 
         <div className="account__grid">
           <aside className="account__card" data-reveal>
@@ -71,7 +90,14 @@ export default async function AccountPage({
                 {tickets.map((ticket) => (
                   <div className="account__row" key={ticket.number}>
                     <span className="account__id">{ticket.number}</span>
-                    <span className="account__theme">{ticket.theme}</span>
+                    <span className="account__theme">
+                      <span
+                        className={`account__provider account__provider--${ticket.provider}`}
+                      >
+                        {providerLabels[ticket.provider] ?? ticket.provider}
+                      </span>
+                      {ticket.theme}
+                    </span>
                     <span
                       className={`account__prio account__prio--${ticket.priority.toLowerCase()}`}
                     >
@@ -150,8 +176,12 @@ export default async function AccountPage({
             <p className="account__empty">{dict.account.noSubscription}</p>
           )}
         </section>
-        <PersonalSpace locale={locale} />
+        <ProviderScope value={{ id: "tram", base: `/${locale}/tram` }}>
+          <PersonalSpace locale={locale} />
+        </ProviderScope>
       </div>
-    </main>
+      </main>
+      <PortalFooter locale={locale} />
+    </>
   );
 }

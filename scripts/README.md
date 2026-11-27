@@ -8,6 +8,7 @@
 | `seed-tickets.ts` | `npm run db:seed:tickets` | Charge les 24 dossiers VoC depuis `seed.sql` |
 | `create-admin.mjs` | `npm run db:admin` | Crée un compte administrateur |
 | `build-embeddings.mjs` | `npm run embeddings:build` | Recalcule les vecteurs des 17 fiches |
+| `import-alsa.mjs` | `node scripts/import-alsa.mjs` | Importe les 57 lignes Casabus depuis l'API publique |
 | `reclassify-tickets.ts` | `npm run tickets:reclassify` | Reclasse thème, priorité, sentiment et SLA |
 | `backfill-lines.ts` | `npm run tickets:lines` | Extrait la ligne des dossiers existants |
 

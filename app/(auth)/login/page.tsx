@@ -12,9 +12,13 @@ export default async function LoginPage({
 }) {
   const params = await searchParams;
   const user = await getCurrentUser();
+  const next =
+    params.next?.startsWith("/") && !params.next.startsWith("//")
+      ? params.next
+      : "/fr";
 
   if (user) {
-    redirect(user.role === "admin" ? "/admin" : "/fr");
+    redirect(user.role === "admin" ? "/admin" : next);
   }
 
   return (
@@ -27,7 +31,7 @@ export default async function LoginPage({
         </>
       }
     >
-      <LoginForm denied={params.denied === "1"} />
+      <LoginForm denied={params.denied === "1"} next={next} />
     </AuthShell>
   );
 }

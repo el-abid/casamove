@@ -1,5 +1,5 @@
 import type { Ticket } from "@/lib/agent/types";
-import { STATUS_LABELS, remaining } from "./admin-format";
+import { PROVIDER_LABELS, STATUS_LABELS, remaining } from "./admin-format";
 import type { Agent, QueueFilters } from "./admin-types";
 
 export function AdminQueuePanel({
@@ -85,6 +85,19 @@ export function AdminQueuePanel({
         </select>
         <select
           className="adm-filter"
+          value={filters.provider}
+          onChange={(event) => onFilterChange({ provider: event.target.value })}
+          aria-label="Filtrer par opérateur"
+        >
+          <option value="all">Tous opérateurs</option>
+          <option value="tram">CasaMove</option>
+          <option value="bus">Casabus</option>
+          <option value="train">ONCF</option>
+          <option value="air">Aéroports</option>
+          <option value="port">Ports</option>
+        </select>
+        <select
+          className="adm-filter"
           value={filters.locale}
           onChange={(event) => onFilterChange({ locale: event.target.value })}
           aria-label="Filtrer par langue"
@@ -148,6 +161,10 @@ export function AdminQueuePanel({
               </div>
               <b>{ticket.theme}</b>
               <div className="adm-qitem__meta">
+                <span className={`adm-provider adm-provider--${ticket.provider}`}>
+                  {PROVIDER_LABELS[ticket.provider]}
+                </span>
+                <span>·</span>
                 <span>{ticket.locale.toUpperCase()}</span>
                 <span>·</span>
                 <span>

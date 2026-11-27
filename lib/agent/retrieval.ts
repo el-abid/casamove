@@ -11,7 +11,8 @@ import {
   EMBED_MODEL,
   embeddingsEnabled,
 } from "./embeddings";
-import { corpus, lexicalRanking, normalize, type KnowledgeDoc } from "./corpus";
+import { corpus, corpusFor, lexicalRanking, normalize, type KnowledgeDoc } from "./corpus";
+import type { ProviderId } from "@/content/providers";
 
 type EmbeddingFile = {
   model: string;
@@ -132,17 +133,26 @@ const DENSE_AGREEMENT = 0.24;
 export async function retrieveHybrid(
   query: string,
   locale: Locale,
-  options: { limit?: number; queryVector?: number[] } = {}
+  options: {
+    limit?: number;
+    queryVector?: number[];
+    provider?: ProviderId;
+  } = {}
 ): Promise<RetrievalResult> {
   const limit = options.limit ?? 3;
-  const lexical = lexicalRanking(query, locale);
+  const provider = options.provider ?? "tram";
+  const docs = corpusFor(provider);
+  const lexical = lexicalRanking(query, locale, docs);
 
   let queryVector = options.queryVector;
-  if (!queryVector && embeddingsEnabled()) {
+  if (!queryVector && provider === "tram" && embeddingsEnabled()) {
     queryVector = (await embedQuery(query)) ?? undefined;
   }
 
-  const dense = queryVector ? denseRanking(queryVector, locale) : [];
+  const dense =
+    provider === "tram" && queryVector
+      ? denseRanking(queryVector, locale)
+      : [];
   const denseById = new Map(dense.map((hit) => [hit.doc.id, hit.score]));
   const lexicalById = new Map(lexical.map((hit) => [hit.doc.id, hit.score]));
 
@@ -153,7 +163,7 @@ export async function retrieveHybrid(
     dense.slice(0, 8).forEach((hit) => candidateIds.add(hit.doc.id));
   }
 
-  const byId = new Map(corpus.map((doc) => [doc.id, doc]));
+  const byId = new Map(docs.map((doc) => [doc.id, doc]));
   const hits: RetrievalHit[] = [];
 
   for (const id of candidateIds) {
@@ -200,8 +210,8 @@ export async function retrieveHybrid(
   };
 }
 
-function buildCatalog(locale: Locale): string {
-  return corpus
+function buildCatalog(locale: Locale, docs: KnowledgeDoc[] = corpus): string {
+  return docs
     .map((doc) => {
       const keywords = Array.from(new Set(doc.keywords))
         .slice(0, 14)
@@ -223,9 +233,11 @@ function normalizeEvidence(value: string): string {
 
 export async function routeDocuments(
   query: string,
-  locale: Locale
+  locale: Locale,
+  provider: ProviderId = "tram"
 ): Promise<DocumentRouting> {
-  const cacheKey = `${locale}:${normalize(query)}`;
+  const docs = corpusFor(provider);
+  const cacheKey = `${provider}:${locale}:${normalize(query)}`;
   const cached = routingCache.get(cacheKey);
   if (cached) return cached;
 
@@ -254,7 +266,7 @@ Maximum 3 fiches.`,
       },
       {
         role: "user",
-        content: `Question : ${query}\n\nFiches :\n${buildCatalog(locale)}`,
+        content: `Question : ${query}\n\nFiches :\n${buildCatalog(locale, docs)}`,
       },
     ],
     { maxTokens: 320, temperature: 0, timeoutMs: 8_000 }
@@ -266,7 +278,7 @@ Maximum 3 fiches.`,
   }
 
   const ids = Array.isArray(result.docIds)
-    ? result.docIds.filter((id) => corpus.some((doc) => doc.id === id))
+    ? result.docIds.filter((id) => docs.some((doc) => doc.id === id))
     : [];
 
   if (ids.length === 0) {
@@ -274,9 +286,9 @@ Maximum 3 fiches.`,
   }
 
   const evidence = result.evidence ?? {};
-  const docs = ids
+  const selectedDocs = ids
     .slice(0, 3)
-    .map((id) => corpus.find((doc) => doc.id === id))
+    .map((id) => docs.find((doc) => doc.id === id))
     .filter((doc): doc is KnowledgeDoc => Boolean(doc))
     .filter((doc) => {
       const quote = evidence[doc.id];
@@ -288,6 +300,8 @@ Maximum 3 fiches.`,
 
   return rememberRouting(
     cacheKey,
-    docs.length > 0 ? { status: "selected", docs } : { status: "none" }
+    selectedDocs.length > 0
+      ? { status: "selected", docs: selectedDocs }
+      : { status: "none" }
   );
 }

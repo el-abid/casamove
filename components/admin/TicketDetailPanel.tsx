@@ -6,6 +6,7 @@ import type {
 } from "@/lib/agent/types";
 import {
   EVENT_LABELS,
+  PROVIDER_LABELS,
   STATUS_LABELS,
   formatDate,
   remaining,
@@ -66,6 +67,11 @@ export function TicketDetailPanel({
               <div>
                 <h2>{ticket.number}</h2>
                 <p>
+                  <span
+                    className={`adm-provider adm-provider--${ticket.provider}`}
+                  >
+                    {PROVIDER_LABELS[ticket.provider]}
+                  </span>{" "}
                   {ticket.theme} · canal chat · {ticket.locale.toUpperCase()}
                 </p>
               </div>

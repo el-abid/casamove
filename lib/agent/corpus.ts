@@ -1,4 +1,6 @@
 import type { Locale } from "@/content/dictionary";
+import type { ProviderId } from "@/content/providers";
+import { alsaCorpus } from "./corpus-alsa";
 
 type Localized = Record<Locale, string>;
 
@@ -699,7 +701,11 @@ export function normalize(value: string): string {
 
 export type LexicalHit = { doc: KnowledgeDoc; score: number };
 
-export function lexicalRanking(query: string, locale: Locale): LexicalHit[] {
+export function lexicalRanking(
+  query: string,
+  locale: Locale,
+  docs: KnowledgeDoc[] = corpus
+): LexicalHit[] {
   const q = normalize(query);
   const tokens = Array.from(
     new Set(q.split(" ").filter((token) => token.length > 2))
@@ -707,7 +713,7 @@ export function lexicalRanking(query: string, locale: Locale): LexicalHit[] {
 
   const hits: LexicalHit[] = [];
 
-  for (const doc of corpus) {
+  for (const doc of docs) {
     let score = 0;
 
     for (const keyword of new Set(doc.keywords)) {
@@ -728,8 +734,15 @@ export function lexicalRanking(query: string, locale: Locale): LexicalHit[] {
 
 export function retrieve(
   query: string,
-  locale: Locale
+  locale: Locale,
+  docs: KnowledgeDoc[] = corpus
 ): { doc: KnowledgeDoc; score: number } | null {
-  const best = lexicalRanking(query, locale)[0] ?? null;
+  const best = lexicalRanking(query, locale, docs)[0] ?? null;
   return best && best.score >= 3 ? best : null;
+}
+
+export function corpusFor(provider: ProviderId): KnowledgeDoc[] {
+  if (provider === "bus") return alsaCorpus;
+  if (provider === "tram") return corpus;
+  return [];
 }

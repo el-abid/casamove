@@ -7,6 +7,7 @@ const base: Omit<
   "number" | "theme" | "status" | "query" | "sentiment" | "line"
 > = {
   priority: "P3",
+  provider: "tram",
   locale: "fr",
   threadId: "t",
   userId: null,

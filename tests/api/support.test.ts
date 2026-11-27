@@ -3,12 +3,15 @@ import { api, chat, login, register, uniqueEmail } from "../helpers/http";
 import { ADMIN_EMAIL, ADMIN_PASSWORD } from "../helpers/env";
 
 describe("agent Support", () => {
-  it("retrouve un dossier anonyme avec son numéro", async () => {
+  it("retrouve un dossier avec son numéro", async () => {
+    const user = await register(uniqueEmail("lookup"));
     const complaint = await chat(
-      "Je veux signaler un retard sur la ligne 1 ce matin"
+      "Je veux signaler un retard sur la ligne 1 ce matin",
+      { cookie: user.cookie }
     );
     const status = await chat(
-      `Où est mon dossier ${complaint.ticket.number} ?`
+      `Où est mon dossier ${complaint.ticket.number} ?`,
+      { cookie: user.cookie }
     );
 
     expect(status.reply).toContain(complaint.ticket.number);

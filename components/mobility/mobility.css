@@ -1027,3 +1027,71 @@
   font-size: 1.12rem;
   letter-spacing: -0.02em;
 }
+
+/* ---------- Sous-site en préparation ---------- */
+
+.mob-soon {
+  padding-block: clamp(48px, 8vw, 96px);
+}
+
+.mob-soon__inner {
+  max-width: 760px;
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+}
+
+.mob-soon__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border: 1px solid var(--mob-border);
+  color: var(--provider-accent, var(--mob-teal));
+}
+
+.mob-soon__kicker {
+  color: var(--provider-accent, var(--mob-teal));
+  font-size: 11.5px;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.mob-soon h1 {
+  max-width: 16ch;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+.mob-soon p {
+  max-width: 58ch;
+  color: var(--mob-muted);
+  line-height: 1.65;
+}
+
+.mob-soon__tagline {
+  color: var(--mob-navy);
+  font-weight: 650;
+}
+
+.mob-soon__sources {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--mob-muted);
+  font-size: 12px;
+}
+
+.mob-soon__sources b {
+  padding: 4px 10px;
+  border: 1px solid var(--mob-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--mob-navy);
+  font-weight: 650;
+}

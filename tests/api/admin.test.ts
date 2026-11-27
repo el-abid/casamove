@@ -6,6 +6,7 @@ describe("console admin", () => {
   let adminCookie = "";
   let adminId = 0;
   let ticketNumber = "";
+  let userCookie = "";
 
   it("connecte l'administrateur", async () => {
     const response = await login(ADMIN_EMAIL, ADMIN_PASSWORD);
@@ -18,8 +19,11 @@ describe("console admin", () => {
   });
 
   it("liste le dossier créé dans le chat", async () => {
+    const user = await login("usager@casamove.ma", "Usager2026!");
+    userCookie = user.cookie;
     const complaint = await chat(
-      "Je veux signaler un retard sur la ligne 1 ce matin"
+      "Je veux signaler un retard sur la ligne 1 ce matin",
+      { cookie: userCookie }
     );
     ticketNumber = complaint.ticket.number;
 
@@ -30,6 +34,18 @@ describe("console admin", () => {
         (ticket: { number: string }) => ticket.number === ticketNumber
       )
     ).toBe(true);
+  });
+
+  it("conserve l'opérateur du dossier", async () => {
+    const complaint = await chat(
+      "Je veux signaler un retard sur la ligne L006 le 27/11/2026 à Sidi Maarouf",
+      { provider: "bus", cookie: userCookie }
+    );
+    const list = await api("/api/tickets", { cookie: adminCookie });
+    const ticket = list.json.tickets.find(
+      (item: { number: string }) => item.number === complaint.ticket.number
+    );
+    expect(ticket.provider).toBe("bus");
   });
 
   it("approuve un dossier et met à jour le statut", async () => {
@@ -153,7 +169,9 @@ describe("console admin", () => {
   });
 
   it("publie la réponse dans le suivi du chat", async () => {
-    const status = await chat(`Où est mon dossier ${ticketNumber} ?`);
+    const status = await chat(`Où est mon dossier ${ticketNumber} ?`, {
+      cookie: userCookie,
+    });
     expect(status.reply).toContain(ticketNumber);
     expect(status.reply).toContain("Réponse publiée");
   });

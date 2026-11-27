@@ -80,6 +80,7 @@ export async function chat(
     locale?: string;
     sessionId?: string;
     cookie?: string;
+    provider?: string;
     intentHint?: string;
     ticketNumber?: string;
   } = {}
@@ -94,6 +95,7 @@ export async function chat(
     body: {
       message,
       locale: options.locale ?? "fr",
+      provider: options.provider ?? "tram",
       sessionId,
       intentHint: options.intentHint,
       ticketNumber: options.ticketNumber,

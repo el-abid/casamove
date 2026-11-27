@@ -34,10 +34,13 @@ npm run db:admin -- admin@exemple.ma MotDePasse2026! "Nom Admin" 0600000000
 
 | URL | Usage |
 |---|---|
-| `http://localhost:3000/fr` | Site et chat usager |
-| `http://localhost:3000/fr/journey` | Planificateur et compagnon de trajet |
-| `http://localhost:3000/fr/network` | Réseau schématique et géographique |
-| `http://localhost:3000/admin` | Console agents |
+| `http://localhost:3000/fr` | Portail des cinq modes de transport et assistant intermodal |
+| `http://localhost:3000/fr/tram` | Site et chat usager CasaMove |
+| `http://localhost:3000/fr/tram/journey` | Planificateur et compagnon de trajet |
+| `http://localhost:3000/fr/tram/network` | Réseau schématique et géographique |
+| `http://localhost:3000/fr/bus` | Site et assistant Casabus / ALSA |
+| `http://localhost:3000/fr/account` | Compte usager global, tous opérateurs |
+| `http://localhost:3000/admin` | Console agents unifiée |
 | `http://localhost:3000/admin/mobility` | Supervision des simulations et modération des signalements |
 | `http://localhost:3000/login` | Connexion |
 

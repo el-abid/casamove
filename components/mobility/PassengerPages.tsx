@@ -9,6 +9,7 @@ import {
   type MobilityLabel,
 } from "@/content/mobility";
 import { Icon } from "@/components/ui/Icon";
+import { useProviderScope } from "@/components/providers/ProviderContext";
 import { lines, network, stations } from "@/lib/mobility/network";
 import type { PassengerSpace, Report } from "@/lib/mobility/store";
 import { JourneyPlanner, StatusPanel } from "./JourneyPlanner";
@@ -24,6 +25,7 @@ import { reportCategories, severities } from "@/lib/mobility/categories";
 
 export function PassengerHome({ locale }: { locale: Locale }) {
   const t = (label: MobilityLabel) => mobilityText(locale, label);
+  const { base } = useProviderScope(locale);
   const status = useNetworkStatus();
   const [saved, setSaved] = useState<PassengerSpace["saved"]>([]);
   useEffect(() => {
@@ -48,7 +50,7 @@ export function PassengerHome({ locale }: { locale: Locale }) {
           <h1>{t("hero")}</h1>
           <p>{t("heroText")}</p>
           <Link
-            href={`/${locale}/network`}
+            href={`${base}/network`}
             className="mob-button mob-hero-link"
           >
             {t("openNetwork")}{" "}
@@ -69,7 +71,7 @@ export function PassengerHome({ locale }: { locale: Locale }) {
                 {stations.length} {t("stations").toLocaleLowerCase(locale)}
               </p>
             </div>
-            <Link href={`/${locale}/network`}>
+            <Link href={`${base}/network`}>
               {t("openNetwork")}{" "}
               <span className="mob-arrow" aria-hidden>
                 ↗
@@ -80,7 +82,7 @@ export function PassengerHome({ locale }: { locale: Locale }) {
             {lines.map((line) => (
               <Link
                 key={line.id}
-                href={`/${locale}/network?line=${line.id}`}
+                href={`${base}/network?line=${line.id}`}
                 style={{ borderBlockStartColor: line.color }}
               >
                 <LineBadge id={line.id} />
@@ -95,7 +97,7 @@ export function PassengerHome({ locale }: { locale: Locale }) {
         <section className="mob-home-status" data-reveal>
           <div className="mob-section-heading">
             <h2>{t("traffic")}</h2>
-            <Link href={`/${locale}/traffic`}>
+            <Link href={`${base}/traffic`}>
               {t("details")} <span aria-hidden>↗</span>
             </Link>
           </div>
@@ -109,7 +111,7 @@ export function PassengerHome({ locale }: { locale: Locale }) {
                 <Link
                   className="mob-button"
                   key={item.id}
-                  href={`/${locale}/journey?from=${item.from}&to=${item.to}&preference=${item.preference}`}
+                  href={`${base}/journey?from=${item.from}&to=${item.to}&preference=${item.preference}`}
                 >
                   {item.name}
                 </Link>
@@ -125,7 +127,7 @@ export function PassengerHome({ locale }: { locale: Locale }) {
               ["assistance", "help", "chat"],
             ] as const
           ).map(([path, label, icon]) => (
-            <Link key={path} href={`/${locale}/${path}`} className="mob-card">
+            <Link key={path} href={`${base}/${path}`} className="mob-card">
               <Icon name={icon} />
               <strong>{t(label)}</strong>
               <span className="mob-arrow" aria-hidden>
@@ -193,6 +195,7 @@ export function TrafficPage({ locale }: { locale: Locale }) {
 
 export function ReportForm({ locale }: { locale: Locale }) {
   const t = (label: MobilityLabel) => mobilityText(locale, label);
+  const { base } = useProviderScope(locale);
   const [line, setLine] = useState("");
   const [station, setStation] = useState("");
   const [feedback, setFeedback] = useState<MobilityLabel>();
@@ -258,7 +261,7 @@ export function ReportForm({ locale }: { locale: Locale }) {
           <p>{t("guestReport")}</p>
           <Link
             className="mob-button mob-primary"
-            href={`/login?next=/${locale}/reports`}
+            href={`/login?next=${encodeURIComponent(`${base}/reports`)}`}
           >
             {t("signIn")}
           </Link>
@@ -363,6 +366,7 @@ export function ReportForm({ locale }: { locale: Locale }) {
 
 export function AssistancePage({ locale }: { locale: Locale }) {
   const t = (label: MobilityLabel) => mobilityText(locale, label);
+  const { base } = useProviderScope(locale);
   return (
     <section className="mob-card mob-form-panel" data-reveal>
       <p>{t("assistText")}</p>

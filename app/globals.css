@@ -2226,3 +2226,74 @@ li {
     transform: none !important;
   }
 }
+
+/* ---------- Marques de sous-sites ---------- */
+
+.brand__mark--plain {
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.brand__mark--plain::before,
+.brand__mark--plain::after {
+  display: none;
+}
+
+.account__provider {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-end: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #3b4a5e;
+  font-size: 9.5px;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  vertical-align: 1px;
+}
+
+.account__provider--tram {
+  background: #fbf1de;
+  color: #8a5a00;
+}
+
+.account__provider--bus {
+  background: #fbece8;
+  color: #9b2c1f;
+}
+
+.account__provider--train {
+  background: #e8f1fb;
+  color: #1b5fa6;
+}
+
+.account__provider--air {
+  background: #fbeaec;
+  color: #b01e2e;
+}
+
+.account__provider--port {
+  background: #e6f3f5;
+  color: #0e5a6b;
+}
+
+.chat__signin {
+  align-self: flex-start;
+  margin-block-start: 2px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.chat__signin:hover {
+  background: #1d2a3d;
+}

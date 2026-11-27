@@ -24,11 +24,20 @@ Application Next.js 16 unique, sans service Python : site public FR/AR/EN, chat 
 
 ## Architecture
 
-- Écrans : `app/(site)/[locale]`, `app/(auth)`, `app/(admin)`. Tout le JSON et le SSE sous `app/api/*`.
-- `components/` ne parle jamais à Postgres, `lib/` porte la logique métier sans React, `content/dictionary.ts` et `content/site.ts` ne dépendent d'aucun autre dossier.
+- Portail multilingue : `app/(site)/[locale]/page.tsx`. Sous-sites : `app/(site)/[locale]/[provider]/...` avec `providers` = tram, bus, train, air, port.
+- `content/providers.ts` : identité, statut, couleurs et sources de chaque opérateur. `components/providers/ProviderContext.tsx` fournit le `base` d'URL aux composants clients. Ne jamais coder `/${locale}/...` en dur dans un composant de sous-site, utiliser le contexte.
+- Les anciennes routes `/fr/journey` et compagnie redirigent vers `/fr/tram/...` via `next.config.mjs`. Les providers `tram` et `bus` sont `live`, les autres sont `soon`.
+- Données ALSA : `content/providers/alsa/network.json` est généré par `node scripts/import-alsa.mjs` depuis l'API publique `api.alsaalbaida.ma`. 57 lignes, 1 056 arrêts. Audit dans `docs/research/alsa-data-audit.md`.
+- Agents : `lib/agent/corpus.ts` expose `corpusFor(provider)`, avec `corpus-alsa.ts` pour le bus. Le chat envoie `provider` dans `/api/chat`, le graphe le propage et `tickets.provider` conserve l'opérateur.
+- Agent général intermodal : `lib/agent/general.ts` et `lib/mobility/intermodal.ts` (environ 1 200 nœuds, 3 900 arêtes tram + bus + train). Chat sur le portail via `/api/chat/general`. Les liaisons ONCF sont un tracé simplifié, pas une donnée scrapée. Interface A2A minimale : `GET/POST /api/agents/[provider]`.
+- Personas : `PERSONAS` et `GREETINGS` dans `lib/agent/graph.ts` spécialisent chaque opérateur. Le bus ne doit jamais parler de CasaMove, de tramway ni de busway. Tester avec `LLM_ENABLED=false` pour vérifier les greetings de repli.
+- Console unifiée : `AdminQueuePanel` filtre par opérateur, `PROVIDER_LABELS` dans `admin-format.ts` et badges `.adm-provider` dans `admin.css`. `formatDate` calcule l'heure Maroc (UTC+1) sans `Intl` pour éviter les mismatch SSR/client.
+- Compte global à `/{locale}/account` (header portail). Les anciennes URL `/fr/tram/account` redirigent vers le compte global. Les réclamations exigent une session : le graphe renvoie un message de connexion et l'API émet un événement SSE `signin` si `userId` est absent.
+- `components/` ne parle jamais à Postgres, `lib/` porte la logique métier sans React, `content/dictionary.ts`, `content/site.ts`, `content/portal.ts`, `content/alsa.ts` et `content/providers.ts` ne dépendent d'aucun autre dossier applicatif.
 - `lib/db.ts` : pool et migrations. `lib/agent/graph.ts` : graphe LangGraph (superviseur, knowledge, complaint, HITL). `lib/agent/corpus.ts` : source de vérité des fiches RAG.
 - Réclamation : `interrupt()` suspend le graphe, `POST /api/tickets/[id]/decision` reprend avec `Command({ resume })` sur le même `thread_id`.
 - Pas de base vectorielle : embeddings précalculés dans `lib/agent/embeddings.json`, inclus dans le build standalone via `next.config.mjs`.
+- Données ALSA : audit et endpoints dans `docs/research/alsa-data-audit.md`. L'API `api.alsaalbaida.ma` et les GTFS Azure sont publiques, pas besoin de scraper le HTML.
 - `docs/` est un projet npm séparé (génération PDF, dépendances propres) exclu de `tsconfig`. Ne pas y ajouter de code applicatif.
 
 ## Conventions

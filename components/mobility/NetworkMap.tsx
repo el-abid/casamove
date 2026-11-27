@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useId, useRef, useState } from "react";
 import type { Locale } from "@/content/dictionary";
 import { mobilityText, mobilityValue } from "@/content/mobility";
+import { useProviderScope } from "@/components/providers/ProviderContext";
 import {
   edgeId,
   findStations,
@@ -195,6 +196,7 @@ export function NetworkMap({
 }) {
   const t = (label: Parameters<typeof mobilityText>[1]) =>
     mobilityText(locale, label);
+  const { base } = useProviderScope(locale);
   const [selected, setSelected] = useState<string>();
   const [filter, setFilter] = useState<LineId | "all">(initialLine ?? "all");
   const [zoom, setZoom] = useState(1);
@@ -507,10 +509,10 @@ export function NetworkMap({
             })}
           {showDirectory && selectedStation.boarding !== "unconfirmed" && (
             <div className="mob-inline">
-              <Link href={`/${locale}/journey?from=${selectedStation.id}`}>
+              <Link href={`${base}/journey?from=${selectedStation.id}`}>
                 {t("pickDeparture")}
               </Link>
-              <Link href={`/${locale}/journey?to=${selectedStation.id}`}>
+              <Link href={`${base}/journey?to=${selectedStation.id}`}>
                 {t("pickDestination")}
               </Link>
             </div>

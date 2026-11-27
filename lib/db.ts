@@ -135,6 +135,9 @@ async function migrate() {
       ADD COLUMN IF NOT EXISTS user_id integer REFERENCES users(id) ON DELETE SET NULL;
 
     ALTER TABLE tickets
+      ADD COLUMN IF NOT EXISTS provider text NOT NULL DEFAULT 'tram';
+
+    ALTER TABLE tickets
       ADD COLUMN IF NOT EXISTS assigned_to integer REFERENCES users(id) ON DELETE SET NULL;
 
     ALTER TABLE tickets

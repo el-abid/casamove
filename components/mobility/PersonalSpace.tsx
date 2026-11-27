@@ -8,6 +8,7 @@ import {
   mobilityValue,
   type MobilityLabel,
 } from "@/content/mobility";
+import { useProviderScope } from "@/components/providers/ProviderContext";
 import { stationById } from "@/lib/mobility/network";
 import type {
   MobilityPreferences,
@@ -96,6 +97,7 @@ function PreferencesForm({
 
 export function PersonalSpace({ locale }: { locale: Locale }) {
   const t = (label: MobilityLabel) => mobilityText(locale, label);
+  const { base } = useProviderScope(locale);
   const [space, setSpace] = useState<PassengerSpace>();
   const [favourite, setFavourite] = useState("");
   const [feedback, setFeedback] = useState<MobilityLabel>();
@@ -138,7 +140,7 @@ export function PersonalSpace({ locale }: { locale: Locale }) {
     }
   }
   const route = (item: SavedJourney) =>
-    `/${locale}/journey?from=${item.from}&to=${item.to}&preference=${item.preference}`;
+    `${base}/journey?from=${item.from}&to=${item.to}&preference=${item.preference}`;
   const frequency = new Map<
     string,
     { from: string; to: string; count: number }
@@ -179,7 +181,7 @@ export function PersonalSpace({ locale }: { locale: Locale }) {
             {active && (
               <Link
                 className="mob-button mob-primary"
-                href={`/${locale}/journey`}
+                href={`${base}/journey`}
               >
                 {t("resume")} · {t("companion")}
               </Link>
@@ -266,7 +268,7 @@ export function PersonalSpace({ locale }: { locale: Locale }) {
                 {frequent.map(({ from, to, count }) => (
                   <Link
                     key={`${from}:${to}`}
-                    href={`/${locale}/journey?from=${from}&to=${to}`}
+                    href={`${base}/journey?from=${from}&to=${to}`}
                   >
                     {stationName(from, locale)} ↔ {stationName(to, locale)} ·{" "}
                     {count}
@@ -304,7 +306,7 @@ export function PersonalSpace({ locale }: { locale: Locale }) {
               <ul className="mob-account-list">
                 {space.favourites.map((id) => (
                   <li key={id} className="mob-favourite">
-                    <Link href={`/${locale}/journey?from=${id}`}>
+                    <Link href={`${base}/journey?from=${id}`}>
                       <LineBadge id={stationById.get(id)!.line} />{" "}
                       {stationName(id, locale)}
                     </Link>
@@ -426,7 +428,7 @@ export function PersonalSpace({ locale }: { locale: Locale }) {
                 {space.history.map((item, index) => (
                   <li key={index}>
                     <Link
-                      href={`/${locale}/journey?from=${item.from}&to=${item.to}`}
+                      href={`${base}/journey?from=${item.from}&to=${item.to}`}
                     >
                       {stationName(item.from, locale)} →{" "}
                       {stationName(item.to, locale)}
